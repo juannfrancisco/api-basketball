@@ -5,4 +5,4 @@ steps:
   - id: 'Pull image'
     name: 'maven:3-jdk-8'
     entrypoint: mvn
-    args: ['clean install']
+    args: ['clean', 'install']
