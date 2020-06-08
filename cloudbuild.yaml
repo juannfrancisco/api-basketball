@@ -1,0 +1,8 @@
+# Copyright Ripley 2020
+# Cloud Build Pipeline
+
+steps:
+  - id: 'Pull image'
+    name: 'maven:3-jdk-8'
+    entrypoint: mvn
+    args: ['clean install']
