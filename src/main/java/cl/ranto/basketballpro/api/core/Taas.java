@@ -3,13 +3,15 @@ package cl.ranto.basketballpro.api.core;
 import com.google.cloud.firestore.annotation.DocumentId;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
+import java.util.Date;
+
 @Document(collectionName = "players")
 public class Taas {
 
     @DocumentId
     private String oid;
     private String nombre;
-    private String fechaIngreso;
+    private Date fechaIngreso;
     private String area;
     private String perfil;
 
@@ -30,11 +32,11 @@ public class Taas {
         this.nombre = nombre;
     }
 
-    public String getFechaIngreso() {
+    public Date getFechaIngreso() {
         return fechaIngreso;
     }
 
-    public void setFechaIngreso(String fechaIngreso) {
+    public void setFechaIngreso(Date fechaIngreso) {
         this.fechaIngreso = fechaIngreso;
     }
 
