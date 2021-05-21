@@ -14,18 +14,18 @@ steps:
 
   - id: 'Create or update run services'
     name: 'gcr.io/cloud-builders/gcloud'
-      args:
-        - 'run'
-        - 'deploy'
-        - 'api-basketball-pro'
-        - '--image'
-        - 'gcr.io/$PROJECT_ID/basketball-api:$BUILD_ID'
-        - '--region'
-        - 'us-east1'
-        - '--platform'
-        - 'managed'
-        - '--allow-unauthenticated'
-        - '--port'
-        - '8080'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'api-basketball-pro'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/basketball-api:$BUILD_ID'
+      - '--region'
+      - 'us-east1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
 
 images: ["gcr.io/$PROJECT_ID/basketball-api:$BUILD_ID"]
