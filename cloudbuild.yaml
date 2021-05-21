@@ -13,7 +13,7 @@ steps:
     args:
       - '-c'
       - |-
-        ls -ltr && pwd
+        ls -ltr && ls -ltr target && pwd
 
   - id: 'Create image'
     name: 'gcr.io/cloud-builders/docker'
