@@ -9,6 +9,7 @@ steps:
 
   - id: 'test'
     name: 'ubuntu'
+    entrypoint: 'bash'
     args:
       - '-c'
       - |-
