@@ -12,6 +12,10 @@ steps:
     name: 'gcr.io/cloud-builders/docker'
     args: ["build", "-t", "gcr.io/$PROJECT_ID/basketball-api:$BUILD_ID", "."]
 
+  - id: 'Create image'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ["push", "gcr.io/$PROJECT_ID/basketball-api:$BUILD_ID"]
+
   - id: 'Create or update run services'
     name: 'gcr.io/cloud-builders/gcloud'
     args:
