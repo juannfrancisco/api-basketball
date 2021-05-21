@@ -6,7 +6,13 @@ steps:
     name: 'maven:3-jdk-8'
     entrypoint: mvn
     args: ["package", "-Dmaven.test.skip=true"]
-    #args: ['compile', 'jib:build', '-Dimage=gcr.io/$PROJECT_ID/basketball-api:$BUILD_ID' ]
+
+  - id: 'test'
+    name: 'ubuntu'
+    args:
+      - '-c'
+      - |-
+        ls -ltr && pwd
 
   - id: 'Create image'
     name: 'gcr.io/cloud-builders/docker'
