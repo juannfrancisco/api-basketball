@@ -39,7 +39,7 @@ public class CourtController {
     }
 
     @RequestMapping(method = RequestMethod.PUT)
-    public void save( @RequestBody CourtDTO court){
-        service.save(court);
+    public CourtDTO save( @RequestBody CourtDTO court){
+        return service.save(court);
     }
 }

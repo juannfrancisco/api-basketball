@@ -7,14 +7,6 @@ steps:
     entrypoint: mvn
     args: ["package", "-Dmaven.test.skip=true"]
 
-  - id: 'test'
-    name: 'ubuntu'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |-
-        ls -ltr && ls -ltr target && pwd
-
   - id: 'Create image'
     name: 'gcr.io/cloud-builders/docker'
     args: ["build", "-t", "gcr.io/$PROJECT_ID/basketball-api:$BUILD_ID", "."]
