@@ -1,11 +1,8 @@
 package cl.ranto.basketballpro.api.services;
 
 
-import cl.ranto.basketballpro.api.core.Court;
+
 import cl.ranto.basketballpro.api.core.League;
-import cl.ranto.basketballpro.api.dto.CourtDTO;
-import cl.ranto.basketballpro.api.repositories.CourtRepository;
-import com.google.cloud.firestore.GeoPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

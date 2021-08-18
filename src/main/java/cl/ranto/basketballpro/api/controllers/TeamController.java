@@ -1,34 +1,27 @@
 package cl.ranto.basketballpro.api.controllers;
 
-import cl.ranto.basketballpro.api.core.Court;
-import cl.ranto.basketballpro.api.dto.CourtDTO;
-import cl.ranto.basketballpro.api.services.CourtService;
+
+import cl.ranto.basketballpro.api.core.Team;
+import cl.ranto.basketballpro.api.services.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
-/**
- * @author Juan Francisco Maldonado León - juan.maldonado.leon@gmail.com
- * Magno Labs - Santiago de Chile
- * Estadisticas de Deportes - Basketball
- */
 @RestController
-@RequestMapping("/api/v1/courts")
-public class CourtController {
+@RequestMapping("/api/v1/teams")
+public class TeamController {
 
 
     @Autowired
-    private CourtService service;
-
-
+    private TeamService service;
 
     @RequestMapping(method = RequestMethod.GET)
-    public Flux<Court> listAll(){
+    public Flux<Team> listAll(){
         return service.listAll();
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/{oid}")
-    public Court findById( @PathVariable("oid") String oid ){
+    public Team findById( @PathVariable("oid") String oid ){
         return service.findById(oid);
     }
 
@@ -39,13 +32,15 @@ public class CourtController {
     }
 
     @RequestMapping(method = RequestMethod.PUT)
-    public CourtDTO save( @RequestBody CourtDTO court){
-        return service.save(court);
+    public Team save(@RequestBody Team team){
+        return service.save(team);
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public CourtDTO update( @RequestBody CourtDTO court){
-        return service.update(court);
+    public Team update( @RequestBody Team team){
+        return service.update(team);
     }
+
+
 
 }

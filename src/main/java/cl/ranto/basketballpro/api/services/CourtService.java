@@ -49,4 +49,18 @@ public class CourtService {
         return court;
     }
 
+
+    public CourtDTO update(CourtDTO court){
+
+        Court court1 = new Court();
+        court1.setOid(court.getOid());
+        court1.setDescription(court.getDescription());
+        court1.setName(court.getName());
+        court1.setSpectators(court.getSpectators());
+        court1.setLocation( new GeoPoint(court.getLocation().getLatitude(), court.getLocation().getLongitude()));
+        repository.save(court1).block();
+        court.setOid( court1.getOid() );
+        return court;
+    }
+
 }
