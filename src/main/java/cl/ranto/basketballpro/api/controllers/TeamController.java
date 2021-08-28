@@ -49,5 +49,13 @@ public class TeamController {
     }
 
 
+    @RequestMapping(method = RequestMethod.GET,value="/{oid}/players" )
+    public Flux<Player> findAllPlayers(@PathVariable("oid") String oid){
+        return service.findAllPlayers(oid);
+    }
+
+
+
+
 
 }

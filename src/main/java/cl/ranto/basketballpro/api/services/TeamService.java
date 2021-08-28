@@ -50,7 +50,14 @@ public class TeamService {
     }
 
     public Player addPlayer(Player player) {
-        repositoryPlayer.save(player);
+
+        player.setOid(UUID.randomUUID().toString());
+        logger.info("Player OID : " + player.getOid() );
+        repositoryPlayer.save(player).block();
         return player;
+    }
+
+    public Flux<Player> findAllPlayers( String oidTeam ) {
+        return repositoryPlayer.findByOidCurrentTeam(oidTeam);
     }
 }
