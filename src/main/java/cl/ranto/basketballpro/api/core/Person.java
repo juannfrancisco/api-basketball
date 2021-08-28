@@ -25,14 +25,22 @@ import java.util.Date;
  */
 public class Person {
 
+	private String id;
 	private String name;
 	private String lastName;
 	private Date birthdate;
 	private double height;
 	private double weight;
 	private Gender gender;
-	
-	
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	/**
 	 * 
 	 */

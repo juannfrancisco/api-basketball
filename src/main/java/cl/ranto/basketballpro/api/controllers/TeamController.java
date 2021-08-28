@@ -1,6 +1,7 @@
 package cl.ranto.basketballpro.api.controllers;
 
 
+import cl.ranto.basketballpro.api.core.Player;
 import cl.ranto.basketballpro.api.core.Team;
 import cl.ranto.basketballpro.api.services.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,12 @@ public class TeamController {
     @RequestMapping(method = RequestMethod.POST)
     public Team update( @RequestBody Team team){
         return service.update(team);
+    }
+
+    @RequestMapping(method = RequestMethod.PUT,value="/{oid}/players" )
+    public void addPlayerTeam(@PathVariable("oid") String oid, @RequestBody Player player){
+        player.setOidCurrentTeam(oid);
+        service.addPlayer(player);
     }
 
 

@@ -1,6 +1,8 @@
 package cl.ranto.basketballpro.api.services;
 
+import cl.ranto.basketballpro.api.core.Player;
 import cl.ranto.basketballpro.api.core.Team;
+import cl.ranto.basketballpro.api.repositories.PlayerRepository;
 import cl.ranto.basketballpro.api.repositories.TeamRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,9 @@ public class TeamService {
 
     @Autowired
     private TeamRepository repository;
+
+    @Autowired
+    private PlayerRepository repositoryPlayer;
 
 
     public Flux<Team> listAll(){
@@ -42,5 +47,10 @@ public class TeamService {
     public Team update(Team team){
         repository.save(team).block();
         return team;
+    }
+
+    public Player addPlayer(Player player) {
+        repositoryPlayer.save(player);
+        return player;
     }
 }

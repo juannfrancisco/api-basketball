@@ -30,6 +30,7 @@ public class Player extends Person{
 
 	@DocumentId
 	private String oid;
+	private String oidCurrentTeam;
 
 	//private Team currentTeam;
 	private int number;
@@ -97,6 +98,13 @@ public class Player extends Person{
 		this.oid = oid;
 	}
 
+	public String getOidCurrentTeam() {
+		return oidCurrentTeam;
+	}
+
+	public void setOidCurrentTeam(String oidCurrentTeam) {
+		this.oidCurrentTeam = oidCurrentTeam;
+	}
 
 	@Override
 	public boolean equals(Object object) {
