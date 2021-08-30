@@ -26,8 +26,12 @@ public class LeagueService {
         repository.deleteById(oid);
     }
 
-    public void save(League league){
+    public League save(League league){
         repository.save(league);
+        return league;
     }
 
+    public League update(League league) {
+        return  league;
+    }
 }

@@ -16,51 +16,11 @@
  */
 package cl.ranto.basketballpro.api.core;
 
-
-import com.google.cloud.firestore.annotation.DocumentId;
-import org.springframework.cloud.gcp.data.firestore.Document;
-
 /**
  * @author Juan Francisco Maldonado León - juan.maldonado.leon@gmail.com
  * Magno Labs - Santiago de Chile
  * Estadisticas de Deportes - Basketball
  */
-@Document(collectionName = "leagues")
-public class League {
-
-	@DocumentId
-	private String oid;
-	private String name;
-	private LeagueCategory category;
-
-	public LeagueCategory getCategory() {
-		return category;
-	}
-
-	public void setCategory(LeagueCategory category) {
-		this.category = category;
-	}
-
-	public String getOid() {
-		return oid;
-	}
-
-	public void setOid(String oid) {
-		this.oid = oid;
-	}
-
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-	
+public enum GameState {
+	PENDING, IN_PROGRESS, FINALIZED
 }

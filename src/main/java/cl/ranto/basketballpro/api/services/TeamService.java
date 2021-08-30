@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -29,7 +30,10 @@ public class TeamService {
     }
 
     public Team findById( String oid ){
-        return repository.findById( oid).block();
+        Team team = repository.findById( oid).block();
+        List<Player> players = repositoryPlayer.findByOidCurrentTeam(oid).collectList().block();
+        team.setPlayers(players);
+        return team;
     }
 
     public void deleteById( String oid ){

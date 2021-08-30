@@ -17,6 +17,7 @@
 package cl.ranto.basketballpro.api.core;
 
 import com.google.cloud.firestore.annotation.DocumentId;
+import com.google.cloud.firestore.annotation.Exclude;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
 import java.util.List;
@@ -39,15 +40,14 @@ public class Team {
 	private String bio;
 	private Gender gender;
 
+	@Exclude
 	private List<Player> players;
 
 	private Coach coach;
 
 	private TeamCategory category;
 
-
 	private Contact contact;
-
 
 
 

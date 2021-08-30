@@ -25,42 +25,76 @@ import org.springframework.cloud.gcp.data.firestore.Document;
  * Magno Labs - Santiago de Chile
  * Estadisticas de Deportes - Basketball
  */
-@Document(collectionName = "leagues")
-public class League {
+@Document(collectionName = "championships")
+public class Championship {
 
 	@DocumentId
 	private String oid;
 	private String name;
-	private LeagueCategory category;
-
-	public LeagueCategory getCategory() {
-		return category;
+	private String description;
+	private ChampionshipState state;
+	
+	/**
+	 * 
+	 */
+	public Championship(){
+		
 	}
-
-	public void setCategory(LeagueCategory category) {
-		this.category = category;
+	
+	/**
+	 * 
+	 * @param oid
+	 */
+	public Championship(String oid){
+		this.oid = oid;
 	}
-
+	
+	
+	/**
+	 * @return the oid
+	 */
 	public String getOid() {
 		return oid;
 	}
-
+	/**
+	 * @param oid the oid to set
+	 */
 	public void setOid(String oid) {
 		this.oid = oid;
 	}
-
 	/**
 	 * @return the name
 	 */
 	public String getName() {
 		return name;
 	}
-
 	/**
 	 * @param name the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
+	/**
+	 * @return the description
+	 */
+	public String getDescription() {
+		return description;
+	}
+
+	/**
+	 * @param description the description to set
+	 */
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+
+	public ChampionshipState getState() {
+		return state;
+	}
+
+	public void setState(ChampionshipState state) {
+		this.state = state;
+	}
 }
