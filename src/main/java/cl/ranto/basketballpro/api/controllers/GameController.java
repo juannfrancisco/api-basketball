@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 /**
  * @author Juan Francisco Maldonado León - juan.maldonado.leon@gmail.com
  * Magno Labs - Santiago de Chile
@@ -23,12 +25,12 @@ public class GameController {
     private GameService service;
 
     @RequestMapping(method = RequestMethod.GET)
-    public Flux<Game> listAll(){
+    public List<GameDTO> listAll(){
         return service.listAll();
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/{oid}")
-    public Game findById( @PathVariable("oid") String oid ){
+    public GameDTO findById( @PathVariable("oid") String oid ){
         return service.findById(oid);
     }
 
@@ -44,7 +46,7 @@ public class GameController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public Game update( @RequestBody Game game){
+    public GameDTO update( @RequestBody GameDTO game){
         return service.update(game);
     }
 

@@ -1,5 +1,6 @@
 package cl.ranto.basketballpro.api.dto;
 
+import cl.ranto.basketballpro.api.core.Court;
 import cl.ranto.basketballpro.api.core.Location;
 
 public class CourtDTO {
@@ -9,6 +10,19 @@ public class CourtDTO {
     private String description;
     private int spectators;
     private Location location;
+
+    public CourtDTO(){
+
+    }
+
+    public CourtDTO(Court court){
+        this.setOid( court.getOid() );
+        this.setDescription(court.getDescription());
+        this.setSpectators(court.getSpectators() );
+        this.setLocation( new Location() );
+        this.getLocation().setLatitude( court.getLocation().getLatitude()  );
+        this.getLocation().setLongitude( court.getLocation().getLongitude() );
+    }
 
     public String getOid() {
         return oid;

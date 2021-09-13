@@ -2,6 +2,7 @@ package cl.ranto.basketballpro.api.controllers;
 
 import cl.ranto.basketballpro.api.core.*;
 import cl.ranto.basketballpro.api.dto.CourtDTO;
+import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.services.ChampionshipService;
 import cl.ranto.basketballpro.api.services.CourtService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ public class ChampionshipController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/{oid}/matches")
-    public List<Game> getMatches(@PathVariable("oid") String oid ){
+    public List<GameDTO> getMatches(@PathVariable("oid") String oid ){
         return service.findMatchesByChampionship(new Championship(oid));
     }
 }

@@ -16,9 +16,9 @@
  */
 package cl.ranto.basketballpro.api.core;
 
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.annotation.DocumentId;
 import org.springframework.cloud.gcp.data.firestore.Document;
-import org.springframework.data.annotation.Reference;
 
 import java.util.Date;
 
@@ -34,24 +34,21 @@ public class Game {
 	private String oid;
 	private Date date;
 
-	@Reference
-	private Team visitor;
 
-
-	@Reference
-	private Team local;
+	private DocumentReference visitor;
+	private DocumentReference local;
 	
 	private int scoreVisitor;
 	private int scoreLocal;
 
-	@Reference
-	private Court court;
 
-	@Reference
+	private DocumentReference court;
+
+
 	private Referee referee;
 
-	@Reference
-	private Championship championship;
+
+	private DocumentReference championship;
 	
 	private GameState state;
 	
@@ -93,28 +90,28 @@ public class Game {
 	/**
 	 * @return the visitor
 	 */
-	public Team getVisitor() {
+	public DocumentReference getVisitor() {
 		return visitor;
 	}
 
 	/**
 	 * @param visitor the visitor to set
 	 */
-	public void setVisitor(Team visitor) {
+	public void setVisitor(DocumentReference visitor) {
 		this.visitor = visitor;
 	}
 
 	/**
 	 * @return the local
 	 */
-	public Team getLocal() {
+	public DocumentReference getLocal() {
 		return local;
 	}
 
 	/**
 	 * @param local the local to set
 	 */
-	public void setLocal(Team local) {
+	public void setLocal(DocumentReference local) {
 		this.local = local;
 	}
 
@@ -149,14 +146,14 @@ public class Game {
 	/**
 	 * @return the court
 	 */
-	public Court getCourt() {
+	public DocumentReference getCourt() {
 		return court;
 	}
 
 	/**
 	 * @param court the court to set
 	 */
-	public void setCourt(Court court) {
+	public void setCourt(DocumentReference court) {
 		this.court = court;
 	}
 
@@ -188,11 +185,11 @@ public class Game {
 		this.state = state;
 	}
 
-	public Championship getChampionship() {
+	public DocumentReference getChampionship() {
 		return championship;
 	}
 
-	public void setChampionship(Championship championship) {
+	public void setChampionship(DocumentReference championship) {
 		this.championship = championship;
 	}
 
