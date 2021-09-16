@@ -1,13 +1,12 @@
 package cl.ranto.basketballpro.api.controllers;
 
-import cl.ranto.basketballpro.api.core.Championship;
 import cl.ranto.basketballpro.api.core.Game;
+import cl.ranto.basketballpro.api.core.MatchStat;
 import cl.ranto.basketballpro.api.dto.GameDTO;
-import cl.ranto.basketballpro.api.services.ChampionshipService;
 import cl.ranto.basketballpro.api.services.GameService;
+import cl.ranto.basketballpro.api.services.GameStatServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -17,12 +16,15 @@ import java.util.List;
  * Estadisticas de Deportes - Basketball
  */
 @RestController
-@RequestMapping("/api/v1/matches")
+@RequestMapping("/api/v1/games")
 public class GameController {
 
 
     @Autowired
     private GameService service;
+
+    @Autowired
+    private GameStatServices StatService;
 
     @RequestMapping(method = RequestMethod.GET)
     public List<GameDTO> listAll(){
@@ -49,6 +51,18 @@ public class GameController {
     public GameDTO update( @RequestBody GameDTO game){
         return service.update(game);
     }
+
+
+    @RequestMapping(method = RequestMethod.GET, value="/{oid}/stats")
+    public List<MatchStat> findByMatch(@PathVariable("oid") String oid ){
+        return StatService.findByGame(new Game(oid));
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value="/{oid}/state")
+    public void updateState(@PathVariable("oid") String oid ,  @RequestBody Game game){
+        service.updateState(game);
+    }
+
 
 
 

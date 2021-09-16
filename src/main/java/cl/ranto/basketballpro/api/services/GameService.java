@@ -109,4 +109,7 @@ public class GameService {
         return game;
     }
 
+
+    public void updateState(Game game) {
+    }
 }

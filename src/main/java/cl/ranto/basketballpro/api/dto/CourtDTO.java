@@ -17,6 +17,7 @@ public class CourtDTO {
 
     public CourtDTO(Court court){
         this.setOid( court.getOid() );
+        this.setName( court.getName() );
         this.setDescription(court.getDescription());
         this.setSpectators(court.getSpectators() );
         this.setLocation( new Location() );

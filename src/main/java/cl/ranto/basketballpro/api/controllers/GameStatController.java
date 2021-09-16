@@ -1,7 +1,7 @@
 package cl.ranto.basketballpro.api.controllers;
 
 import cl.ranto.basketballpro.api.core.MatchStat;
-import cl.ranto.basketballpro.api.services.MatchStatService;
+import cl.ranto.basketballpro.api.services.GameStatServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 public class GameStatController {
 
 	@Autowired
-	private MatchStatService service;
+	private GameStatServices service;
 
 	@RequestMapping(method = RequestMethod.GET, value="/{oid}")
 	public MatchStat findById(@PathVariable("oid") String oid ){

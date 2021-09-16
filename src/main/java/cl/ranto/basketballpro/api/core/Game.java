@@ -21,6 +21,7 @@ import com.google.cloud.firestore.annotation.DocumentId;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author Juan Francisco Maldonado León - juan.maldonado.leon@gmail.com
@@ -51,6 +52,9 @@ public class Game {
 	private DocumentReference championship;
 	
 	private GameState state;
+
+	private List<GameStat> stats;
+
 	
 	public Game(){
 	}
@@ -191,6 +195,14 @@ public class Game {
 
 	public void setChampionship(DocumentReference championship) {
 		this.championship = championship;
+	}
+
+	public List<GameStat> getStats() {
+		return stats;
+	}
+
+	public void setStats(List<GameStat> stats) {
+		this.stats = stats;
 	}
 
 	@Override

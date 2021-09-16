@@ -15,8 +15,8 @@ public class MatchStat {
     private TypeStat type;
     private double value;
     private TypeTeam typeTeam;
-    private Integer teamOid;
-    private Integer championshipOid;
+    private String teamOid;
+    private String championshipOid;
 
     /**
      *
@@ -32,7 +32,6 @@ public class MatchStat {
     public void setOid(String oid) {
         this.oid = oid;
     }
-
 
     public Game getMatch() {
         return match;
@@ -83,19 +82,19 @@ public class MatchStat {
         this.typeTeam = typeTeam;
     }
 
-    public Integer getTeamOid() {
+    public String getTeamOid() {
         return teamOid;
     }
 
-    public void setTeamOid(Integer teamOid) {
+    public void setTeamOid(String teamOid) {
         this.teamOid = teamOid;
     }
 
-    public Integer getChampionshipOid() {
+    public String getChampionshipOid() {
         return championshipOid;
     }
 
-    public void setChampionshipOid(Integer championshipOid) {
+    public void setChampionshipOid(String championshipOid) {
         this.championshipOid = championshipOid;
     }
 }
