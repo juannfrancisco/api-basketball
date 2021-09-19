@@ -111,5 +111,10 @@ public class GameService {
 
 
     public void updateState(Game game) {
+        Game gameRepo = repository.findById( game.getOid() ).block();
+        gameRepo.setScoreLocal( game.getScoreLocal() );
+        gameRepo.setScoreVisitor(game.getScoreVisitor());
+        gameRepo.setState(GameState.FINALIZED);
+        repository.save(gameRepo).block();
     }
 }
