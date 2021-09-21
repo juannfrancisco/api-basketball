@@ -1,10 +1,12 @@
 package cl.ranto.basketballpro.api.controllers;
 
-import cl.ranto.basketballpro.api.core.*;
-import cl.ranto.basketballpro.api.dto.CourtDTO;
+
+import cl.ranto.basketballpro.api.core.Championship;
+import cl.ranto.basketballpro.api.core.ChampionshipTeam;
+import cl.ranto.basketballpro.api.core.Team;
 import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.services.ChampionshipService;
-import cl.ranto.basketballpro.api.services.CourtService;
+import cl.ranto.basketballpro.api.services.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -24,6 +26,9 @@ public class ChampionshipController {
     @Autowired
     private ChampionshipService service;
 
+    @Autowired
+    private TeamService teamService;
+
     @RequestMapping(method = RequestMethod.GET)
     public Flux<Championship> listAll(){
         return service.listAll();
@@ -36,7 +41,7 @@ public class ChampionshipController {
 
 
     @RequestMapping(method = RequestMethod.DELETE, value="/{oid}")
-    public void deteleById( @PathVariable("oid") String oid ){
+    public void deleteById( @PathVariable("oid") String oid ){
         service.deleteById(oid);
     }
 
@@ -57,7 +62,7 @@ public class ChampionshipController {
 
     @RequestMapping(method = RequestMethod.GET, value="/{oid}/teams")
     public List<Team> getTeams(@PathVariable("oid") String oid ){
-        return service.findTeamsByChampionship(new Championship(oid));
+        return teamService.findByChampionship(oid);
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/{oid}/teams-stats")

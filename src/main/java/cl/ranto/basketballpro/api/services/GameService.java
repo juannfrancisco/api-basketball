@@ -9,19 +9,14 @@ import cl.ranto.basketballpro.api.repositories.CourtRepository;
 import cl.ranto.basketballpro.api.repositories.GameRepository;
 import cl.ranto.basketballpro.api.repositories.TeamRepository;
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.firestore.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -55,28 +50,41 @@ public class GameService {
         return gamesDTO;
     }
 
+    public List<GameDTO> findByChampionship(String oidChampionship){
+
+        List<GameDTO> gamesDTO = new ArrayList<>();
+        try
+        {
+            Firestore db= FirestoreOptions.getDefaultInstance().getService();
+            Query query = db.collection("games").whereEqualTo( "championship", oidChampionship );
+            ApiFuture<QuerySnapshot> querySnapshot = query.get();
+            for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+                document.toObject(Game.class);
+            }
+        }
+        catch (Exception ex){
+
+        }
+        return gamesDTO;
+    }
+
     public GameDTO findById( String oid ){
         Game game =repository.findById( oid).block();
-        return this.toDTO(game);
+        Championship championship = championshipRepository.findById( game.getChampionship().getId() ).block();
+        Court court = courtRepository.findById( game.getCourt().getId() ).block();
+        Team teamVisitor = teamRepository.findById( game.getVisitor().getId() ).block();
+        Team  teamLocal = teamRepository.findById( game.getLocal().getId() ).block();
+        GameDTO gameDTO = new GameDTO(game, new CourtDTO(court), championship, teamLocal ,teamVisitor );
+        return gameDTO;
     }
 
     public GameDTO toDTO(Game game){
-
-        Firestore db= FirestoreOptions.getDefaultInstance().getService();
-
-        GameDTO gameDTO = new GameDTO();
-
+        GameDTO gameDTO = new GameDTO(game);
         gameDTO.setChampionship( championshipRepository.findById( game.getChampionship().getId() ).block() );
         gameDTO.setCourt( new CourtDTO( courtRepository.findById( game.getCourt().getId() ).block() ));
         gameDTO.setVisitor( teamRepository.findById( game.getVisitor().getId() ).block() );
         gameDTO.setLocal( teamRepository.findById( game.getLocal().getId() ).block() );
-
-
-        gameDTO.setOid( game.getOid() );
-        gameDTO.setDate( game.getDate() );
-        gameDTO.setState( GameState.PENDING );
         return gameDTO;
-
     }
 
     public void deleteById( String oid ){
@@ -105,16 +113,36 @@ public class GameService {
 
 
     public GameDTO update(GameDTO game){
-        //repository.save(game).block();
+
         return game;
     }
 
 
     public void updateState(Game game) {
-        Game gameRepo = repository.findById( game.getOid() ).block();
-        gameRepo.setScoreLocal( game.getScoreLocal() );
-        gameRepo.setScoreVisitor(game.getScoreVisitor());
-        gameRepo.setState(GameState.FINALIZED);
-        repository.save(gameRepo).block();
+
+        try{
+            Firestore db= FirestoreOptions.getDefaultInstance().getService();
+            DocumentReference gameRef = db.collection("games").document(game.getOid());
+            Map<String, Object> data = new HashMap<>();
+            data.put("state", GameState.FINALIZED.toString());
+            data.put("scoreLocal", game.getScoreLocal());
+            data.put("scoreVisitor", game.getScoreVisitor());
+
+            //asynchronously update doc
+            ApiFuture<WriteResult> writeResult = gameRef.update( data);
+
+            logger.info("Update time : " + writeResult.get().getUpdateTime());
+            /**
+             Game gameRepo = repository.findById( game.getOid() ).block();
+             gameRepo.setScoreLocal( game.getScoreLocal() );
+             gameRepo.setScoreVisitor(game.getScoreVisitor());
+             gameRepo.setState(GameState.FINALIZED);
+             repository.save(gameRepo).block();
+             **/
+
+        }catch (Exception e){
+            logger.error(e.getMessage(),e);
+        }
+
     }
 }

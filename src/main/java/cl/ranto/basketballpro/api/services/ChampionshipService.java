@@ -66,6 +66,7 @@ public class ChampionshipService {
     }
 
     public List<Team> findTeamsByChampionship(Championship championship) {
+
         return new ArrayList<>();
     }
 
@@ -76,22 +77,18 @@ public class ChampionshipService {
     public List<GameDTO> findMatchesByChampionship(Championship championship) {
         Firestore db= FirestoreOptions.getDefaultInstance().getService();
         DocumentReference championshipRef = db.collection("championships").document(championship.getOid());
-
         List<GameDTO> games = new ArrayList<>();
-
         ApiFuture<QuerySnapshot> qs = db.collection("games").whereEqualTo( "championship", championshipRef ).get();
         try {
             QuerySnapshot gamesSnapshot = qs.get();
             List<QueryDocumentSnapshot> gamesDoc = gamesSnapshot.getDocuments();
-            games.add( gameService.findById(gamesDoc.get(0).getId()) );
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+            for (DocumentSnapshot document : qs.get().getDocuments()) {
+                Game game = document.toObject(Game.class);
+                games.add( new GameDTO( game ) );
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
         }
-
-        //return gameRepository.findByChampionship( championshipRef ).collectList().block();
         return games;
     }
 

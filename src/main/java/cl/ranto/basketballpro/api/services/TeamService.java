@@ -3,20 +3,25 @@ package cl.ranto.basketballpro.api.services;
 import cl.ranto.basketballpro.api.core.*;
 import cl.ranto.basketballpro.api.repositories.PlayerRepository;
 import cl.ranto.basketballpro.api.repositories.TeamRepository;
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.firestore.WriteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class TeamService {
 
     private final static Logger logger = LoggerFactory.getLogger(CourtService.class);
+    private static final String COLLECTION_TEAMS = "teams";
 
     @Autowired
     private TeamRepository repository;
@@ -29,6 +34,10 @@ public class TeamService {
         return repository.findAll();
     }
 
+    public List<Team> findByChampionship( String oidChampionship ){
+        return repository.findByOidChampionship(oidChampionship).collectList().block();
+    }
+
     public Team findById( String oid ){
         Team team = repository.findById( oid).block();
         List<Player> players = repositoryPlayer.findByOidCurrentTeam(oid).collectList().block();
@@ -37,7 +46,6 @@ public class TeamService {
     }
 
     public void deleteById( String oid ){
-        logger.info("Court OID : " + oid );
         repository.deleteById(oid).block();
     }
 
@@ -48,15 +56,32 @@ public class TeamService {
     }
 
 
-    public Team update(Team team){
-        repository.save(team).block();
+    /**
+     *
+     * @param team
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    public Team update(Team team) throws ExecutionException, InterruptedException {
+        Firestore db= FirestoreOptions.getDefaultInstance().getService();
+        DocumentReference docRef = db.collection(COLLECTION_TEAMS).document(team.getOid());
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("bio", team.getBio());
+        data.put("gender", team.getGender().toString());
+        data.put("category", team.getCategory().toString());
+        //data.put("contact", team.getContact() );
+        //data.put("coach", team.getCoach());
+
+        ApiFuture<WriteResult> writeResult = docRef.update( data );
+        logger.info("Update time : " + writeResult.get().getUpdateTime());
+
         return team;
     }
 
     public Player addPlayer(Player player) {
-
         player.setOid(UUID.randomUUID().toString());
-        logger.info("Player OID : " + player.getOid() );
         repositoryPlayer.save(player).block();
         return player;
     }
@@ -67,9 +92,7 @@ public class TeamService {
 
     public List<Player> findPlayersByName(String name) {
         Team team = repository.findByNameURL( name ).block();
-        logger.info("Team:" + team.getNameURL());
         List<Player> players = repositoryPlayer.findByOidCurrentTeam(team.getOid()).collectList().block();
-        logger.info("Players:" + players.size());
         return players;
     }
 

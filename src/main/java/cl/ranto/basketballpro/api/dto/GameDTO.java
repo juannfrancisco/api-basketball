@@ -18,6 +18,36 @@ public class GameDTO {
     private GameState state;
 
 
+    public GameDTO(){
+
+    }
+
+    public GameDTO( Game game ){
+        this.setScoreLocal( game.getScoreLocal() );
+        this.setScoreVisitor( game.getScoreVisitor() );
+        this.setState( game.getState() );
+
+        this.setOid( game.getOid() );
+        this.setDate( game.getDate() );
+    }
+
+
+    /**
+     *
+     * @param game
+     * @param court
+     * @param championship
+     * @param teamLocal
+     * @param teamVisitor
+     */
+    public GameDTO( Game game, CourtDTO court, Championship championship, Team teamLocal, Team teamVisitor ){
+        this( game );
+        this.setVisitor(teamVisitor);
+        this.setLocal(teamLocal);
+        this.setChampionship(championship);
+        this.setCourt(court);
+    }
+
     public String getOid() {
         return oid;
     }

@@ -2,7 +2,10 @@ package cl.ranto.basketballpro.api.controllers;
 
 
 import cl.ranto.basketballpro.api.core.*;
+import cl.ranto.basketballpro.api.services.CourtService;
 import cl.ranto.basketballpro.api.services.TeamService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -13,6 +16,8 @@ import java.util.List;
 @RequestMapping("/api/v1/teams")
 public class TeamController {
 
+
+    private final static Logger logger = LoggerFactory.getLogger(TeamController.class);
 
     @Autowired
     private TeamService service;
@@ -40,7 +45,13 @@ public class TeamController {
 
     @RequestMapping(method = RequestMethod.POST)
     public Team update( @RequestBody Team team){
-        return service.update(team);
+        try {
+            return service.update(team);
+        }
+        catch (Exception ex){
+            logger.error(ex.getMessage(), ex);
+            return null;
+        }
     }
 
     @RequestMapping(method = RequestMethod.PUT,value="/{oid}/players" )

@@ -30,30 +30,19 @@ import java.util.List;
 @Document(collectionName = "teams")
 public class Team {
 
-
 	@DocumentId
 	private String oid;
-
 	private String nameURL;
-
 	private String name;
 	private String bio;
+	private String oidChampionship;
 	private Gender gender;
+	private Coach coach;
+	private TeamCategory category;
+	private Contact contact;
 
 	@Exclude
 	private List<Player> players;
-
-	private Coach coach;
-
-	private TeamCategory category;
-
-	private Contact contact;
-
-
-
-
-
-
 
 	/**
 	 * 
@@ -188,6 +177,13 @@ public class Team {
 		this.nameURL = nameURL;
 	}
 
+	public String getOidChampionship() {
+		return oidChampionship;
+	}
+
+	public void setOidChampionship(String oidChampionship) {
+		this.oidChampionship = oidChampionship;
+	}
 
 	@Override
 	public boolean equals(Object obj) {
