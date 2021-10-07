@@ -39,8 +39,8 @@ public class Game {
 	private DocumentReference visitor;
 	private DocumentReference local;
 	
-	private int scoreVisitor;
-	private int scoreLocal;
+	private int visitorScore;
+	private int localScore;
 
 
 	private DocumentReference court;
@@ -119,32 +119,20 @@ public class Game {
 		this.local = local;
 	}
 
-	/**
-	 * @return the scoreVisitor
-	 */
-	public int getScoreVisitor() {
-		return scoreVisitor;
+	public int getVisitorScore() {
+		return visitorScore;
 	}
 
-	/**
-	 * @param scoreVisitor the scoreVisitor to set
-	 */
-	public void setScoreVisitor(int scoreVisitor) {
-		this.scoreVisitor = scoreVisitor;
+	public void setVisitorScore(int visitorScore) {
+		this.visitorScore = visitorScore;
 	}
 
-	/**
-	 * @return the scoreLocal
-	 */
-	public int getScoreLocal() {
-		return scoreLocal;
+	public int getLocalScore() {
+		return localScore;
 	}
 
-	/**
-	 * @param scoreLocal the scoreLocal to set
-	 */
-	public void setScoreLocal(int scoreLocal) {
-		this.scoreLocal = scoreLocal;
+	public void setLocalScore(int localScore) {
+		this.localScore = localScore;
 	}
 
 	/**

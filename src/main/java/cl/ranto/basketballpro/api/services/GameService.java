@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.print.Doc;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -40,6 +41,10 @@ public class GameService {
     private FirestoreTemplate firestoreTemplate;
 
 
+    /**
+     *
+     * @return
+     */
     public List<GameDTO> listAll(){
         List<Game> games = repository.findAll().collectList().block();
         List<GameDTO> gamesDTO = new ArrayList<>();
@@ -50,8 +55,12 @@ public class GameService {
         return gamesDTO;
     }
 
+    /**
+     *
+     * @param oidChampionship
+     * @return
+     */
     public List<GameDTO> findByChampionship(String oidChampionship){
-
         List<GameDTO> gamesDTO = new ArrayList<>();
         try
         {
@@ -63,13 +72,21 @@ public class GameService {
             }
         }
         catch (Exception ex){
-
+            logger.error(ex.getMessage(), ex);
         }
         return gamesDTO;
     }
 
+    /**
+     *
+     * @param oid
+     * @return
+     */
     public GameDTO findById( String oid ){
         Game game =repository.findById( oid).block();
+        //List<GameStat> stats = getGameStats(oid);
+        //game.setStats(stats);
+
         Championship championship = championshipRepository.findById( game.getChampionship().getId() ).block();
         Court court = courtRepository.findById( game.getCourt().getId() ).block();
         Team teamVisitor = teamRepository.findById( game.getVisitor().getId() ).block();
@@ -78,6 +95,39 @@ public class GameService {
         return gameDTO;
     }
 
+
+    /**
+     *
+     * @param oid
+     * @return
+     */
+    public List<GameStat> getGameStats( String oid ){
+        List<GameStat> stats = new ArrayList<>();
+        try{
+            Firestore db= FirestoreOptions.getDefaultInstance().getService();
+            CollectionReference gameStats = db.collection("games").document(oid).collection("stats");
+
+            gameStats.listDocuments().forEach( documentReference -> {
+                try {
+                    GameStat gameStat = documentReference.get().get().toObject(GameStat.class);
+                    stats.add(gameStat);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } );
+
+
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return stats;
+    }
+
+    /**
+     *
+     * @param game
+     * @return
+     */
     public GameDTO toDTO(Game game){
         GameDTO gameDTO = new GameDTO(game);
         gameDTO.setChampionship( championshipRepository.findById( game.getChampionship().getId() ).block() );
@@ -87,11 +137,20 @@ public class GameService {
         return gameDTO;
     }
 
+    /**
+     *
+     * @param oid
+     */
     public void deleteById( String oid ){
         logger.info("championship OID : " + oid );
         repository.deleteById(oid).block();
     }
 
+    /**
+     *
+     * @param game
+     * @return
+     */
     public GameDTO save(GameDTO game){
         Firestore db= FirestoreOptions.getDefaultInstance().getService();
         DocumentReference visitorRef = db.collection("teams").document(game.getVisitor().getOid());
@@ -107,6 +166,7 @@ public class GameService {
         gameDocument.setOid(UUID.randomUUID().toString());
         gameDocument.setDate( game.getDate() );
         gameDocument.setState( GameState.PENDING );
+        gameDocument.setStats( new ArrayList<>() );
         repository.save(gameDocument).block();
         return game;
     }
@@ -118,31 +178,38 @@ public class GameService {
     }
 
 
+    /**
+     *
+     * @param game
+     */
     public void updateState(Game game) {
-
         try{
             Firestore db= FirestoreOptions.getDefaultInstance().getService();
             DocumentReference gameRef = db.collection("games").document(game.getOid());
             Map<String, Object> data = new HashMap<>();
             data.put("state", GameState.FINALIZED.toString());
-            data.put("scoreLocal", game.getScoreLocal());
-            data.put("scoreVisitor", game.getScoreVisitor());
-
-            //asynchronously update doc
+            data.put("localScore", game.getLocalScore());
+            data.put("visitorScore", game.getVisitorScore());
             ApiFuture<WriteResult> writeResult = gameRef.update( data);
-
             logger.info("Update time : " + writeResult.get().getUpdateTime());
-            /**
-             Game gameRepo = repository.findById( game.getOid() ).block();
-             gameRepo.setScoreLocal( game.getScoreLocal() );
-             gameRepo.setScoreVisitor(game.getScoreVisitor());
-             gameRepo.setState(GameState.FINALIZED);
-             repository.save(gameRepo).block();
-             **/
-
         }catch (Exception e){
             logger.error(e.getMessage(),e);
         }
+    }
 
+    /**
+     *
+     * @param gameOid
+     * @param stat
+     */
+    public void addStat(String gameOid, GameStat stat) {
+        try{
+            Firestore db= FirestoreOptions.getDefaultInstance().getService();
+            DocumentReference gameRef = db.collection("games").document(gameOid);
+            ApiFuture<DocumentReference>  ref = gameRef.collection("stats").add(stat);
+            logger.info("Update time : " + ref.get() );
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
     }
 }

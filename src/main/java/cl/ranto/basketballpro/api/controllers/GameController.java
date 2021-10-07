@@ -1,6 +1,7 @@
 package cl.ranto.basketballpro.api.controllers;
 
 import cl.ranto.basketballpro.api.core.Game;
+import cl.ranto.basketballpro.api.core.GameStat;
 import cl.ranto.basketballpro.api.core.MatchStat;
 import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.services.GameService;
@@ -19,7 +20,6 @@ import java.util.List;
 @RequestMapping("/api/v1/games")
 public class GameController {
 
-
     @Autowired
     private GameService service;
 
@@ -36,9 +36,8 @@ public class GameController {
         return service.findById(oid);
     }
 
-
     @RequestMapping(method = RequestMethod.DELETE, value="/{oid}")
-    public void deteleById( @PathVariable("oid") String oid ){
+    public void deleteById( @PathVariable("oid") String oid ){
         service.deleteById(oid);
     }
 
@@ -52,18 +51,18 @@ public class GameController {
         return service.update(game);
     }
 
-
     @RequestMapping(method = RequestMethod.GET, value="/{oid}/stats")
-    public List<MatchStat> findByMatch(@PathVariable("oid") String oid ){
-        return StatService.findByGame(new Game(oid));
+    public List<GameStat> findStatsByGame(@PathVariable("oid") String oid ){
+        return service.getGameStats( oid );
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, value="/{oid}/stats")
+    public void save(@PathVariable("oid") String oid, @RequestBody GameStat stat){
+        service.addStat(oid,stat);
     }
 
     @RequestMapping(method = RequestMethod.POST, value="/{oid}/state")
     public void updateState(@PathVariable("oid") String oid ,  @RequestBody Game game){
         service.updateState(game);
     }
-
-
-
-
 }

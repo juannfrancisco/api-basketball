@@ -4,13 +4,11 @@ import cl.ranto.basketballpro.api.core.*;
 import cl.ranto.basketballpro.api.repositories.PlayerRepository;
 import cl.ranto.basketballpro.api.repositories.TeamRepository;
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
-import com.google.cloud.firestore.WriteResult;
+import com.google.cloud.firestore.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -28,6 +26,9 @@ public class TeamService {
 
     @Autowired
     private PlayerRepository repositoryPlayer;
+
+    @Autowired
+    private Firestore firestore;
 
 
     public Flux<Team> listAll(){
@@ -64,19 +65,13 @@ public class TeamService {
      * @throws InterruptedException
      */
     public Team update(Team team) throws ExecutionException, InterruptedException {
-        Firestore db= FirestoreOptions.getDefaultInstance().getService();
-        DocumentReference docRef = db.collection(COLLECTION_TEAMS).document(team.getOid());
-
+        DocumentReference docRef = this.firestore.collection(COLLECTION_TEAMS).document(team.getOid());
         Map<String, Object> data = new HashMap<>();
         data.put("bio", team.getBio());
         data.put("gender", team.getGender().toString());
         data.put("category", team.getCategory().toString());
-        //data.put("contact", team.getContact() );
-        //data.put("coach", team.getCoach());
-
         ApiFuture<WriteResult> writeResult = docRef.update( data );
         logger.info("Update time : " + writeResult.get().getUpdateTime());
-
         return team;
     }
 
@@ -86,8 +81,36 @@ public class TeamService {
         return player;
     }
 
+    /**
+     *
+     * @param oidTeam
+     * @return
+     */
     public Flux<Player> findAllPlayers( String oidTeam ) {
         return repositoryPlayer.findByOidCurrentTeam(oidTeam);
+    }
+
+    /**
+     *
+     * @param oidTeam
+     * @return
+     */
+    public List<Player> findAllPlayersOrders( String oidTeam ) {
+        List<Player> players = new ArrayList<>();
+        try {
+            ApiFuture<QuerySnapshot> query = this.firestore.collection(COLLECTION_TEAMS)
+                    .whereEqualTo("oidCurrentTeam", oidTeam)
+                    .orderBy("number").get();
+            for (DocumentSnapshot document : query.get().getDocuments()) {
+                Player player = document.toObject(Player.class);
+                players.add(player);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return players;
     }
 
     public List<Player> findPlayersByName(String name) {

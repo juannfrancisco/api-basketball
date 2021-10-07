@@ -3,6 +3,7 @@ package cl.ranto.basketballpro.api.dto;
 import cl.ranto.basketballpro.api.core.*;
 
 import java.util.Date;
+import java.util.List;
 
 public class GameDTO {
 
@@ -10,12 +11,13 @@ public class GameDTO {
     private Date date;
     private Team visitor;
     private Team local;
-    private int scoreVisitor;
-    private int scoreLocal;
+    private int visitorScore;
+    private int localScore;
     private CourtDTO court;
     private Referee referee;
     private Championship championship;
     private GameState state;
+    private List<GameStat> stats;
 
 
     public GameDTO(){
@@ -23,8 +25,8 @@ public class GameDTO {
     }
 
     public GameDTO( Game game ){
-        this.setScoreLocal( game.getScoreLocal() );
-        this.setScoreVisitor( game.getScoreVisitor() );
+        this.setLocalScore( game.getLocalScore() );
+        this.setVisitorScore( game.getVisitorScore() );
         this.setState( game.getState() );
 
         this.setOid( game.getOid() );
@@ -46,6 +48,7 @@ public class GameDTO {
         this.setLocal(teamLocal);
         this.setChampionship(championship);
         this.setCourt(court);
+        this.setStats( game.getStats() );
     }
 
     public String getOid() {
@@ -80,20 +83,20 @@ public class GameDTO {
         this.local = local;
     }
 
-    public int getScoreVisitor() {
-        return scoreVisitor;
+    public int getVisitorScore() {
+        return visitorScore;
     }
 
-    public void setScoreVisitor(int scoreVisitor) {
-        this.scoreVisitor = scoreVisitor;
+    public void setVisitorScore(int visitorScore) {
+        this.visitorScore = visitorScore;
     }
 
-    public int getScoreLocal() {
-        return scoreLocal;
+    public int getLocalScore() {
+        return localScore;
     }
 
-    public void setScoreLocal(int scoreLocal) {
-        this.scoreLocal = scoreLocal;
+    public void setLocalScore(int localScore) {
+        this.localScore = localScore;
     }
 
     public CourtDTO getCourt() {
@@ -126,5 +129,13 @@ public class GameDTO {
 
     public void setState(GameState state) {
         this.state = state;
+    }
+
+    public List<GameStat> getStats() {
+        return stats;
+    }
+
+    public void setStats(List<GameStat> stats) {
+        this.stats = stats;
     }
 }
