@@ -206,8 +206,9 @@ public class GameService {
         try{
             Firestore db= FirestoreOptions.getDefaultInstance().getService();
             DocumentReference gameRef = db.collection("games").document(gameOid);
+            stat.setOid(UUID.randomUUID().toString());
             ApiFuture<DocumentReference>  ref = gameRef.collection("stats").add(stat);
-            logger.info("Update time : " + ref.get() );
+            logger.info("Update time : " + ref.get().getId() );
         }catch (Exception ex){
             ex.printStackTrace();
         }

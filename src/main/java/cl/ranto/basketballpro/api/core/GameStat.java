@@ -1,14 +1,26 @@
 package cl.ranto.basketballpro.api.core;
 
+import com.google.cloud.firestore.annotation.DocumentId;
+
 public class GameStat {
 
+    @DocumentId
+    private String oid;
     private String oidPlayer;
     private Integer quarter;
+    private String quarterTimeText;
     private TypeStat type;
     private double value;
     private TypeTeam typeTeam;
     private String teamOid;
 
+    public String getOid() {
+        return oid;
+    }
+
+    public void setOid(String oid) {
+        this.oid = oid;
+    }
 
     public String getOidPlayer() {
         return oidPlayer;
@@ -56,5 +68,13 @@ public class GameStat {
 
     public void setTeamOid(String teamOid) {
         this.teamOid = teamOid;
+    }
+
+    public String getQuarterTimeText() {
+        return quarterTimeText;
+    }
+
+    public void setQuarterTimeText(String quarterTimeText) {
+        this.quarterTimeText = quarterTimeText;
     }
 }
