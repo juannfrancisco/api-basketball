@@ -202,15 +202,13 @@ public class GameService {
      * @param gameOid
      * @param stat
      */
-    public void addStat(String gameOid, GameStat stat) {
-        try{
-            Firestore db= FirestoreOptions.getDefaultInstance().getService();
-            DocumentReference gameRef = db.collection("games").document(gameOid);
-            stat.setOid(UUID.randomUUID().toString());
-            ApiFuture<DocumentReference>  ref = gameRef.collection("stats").add(stat);
-            logger.info("Update time : " + ref.get().getId() );
-        }catch (Exception ex){
-            ex.printStackTrace();
-        }
+    public GameStat addStat(String gameOid, GameStat stat) throws ExecutionException, InterruptedException {
+
+        Firestore db= FirestoreOptions.getDefaultInstance().getService();
+        DocumentReference gameRef = db.collection("games").document(gameOid);
+        stat.setOid(UUID.randomUUID().toString());
+        ApiFuture<DocumentReference>  ref = gameRef.collection("stats").add(stat);
+        logger.info("Update time : " + ref.get().getId() );
+        return stat;
     }
 }

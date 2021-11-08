@@ -57,8 +57,13 @@ public class GameController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, value="/{oid}/stats")
-    public void save(@PathVariable("oid") String oid, @RequestBody GameStat stat){
-        service.addStat(oid,stat);
+    public GameStat save(@PathVariable("oid") String oid, @RequestBody GameStat stat){
+        try{
+            return service.addStat(oid,stat);
+        }catch (Exception ex){
+            return null;
+        }
+
     }
 
     @RequestMapping(method = RequestMethod.POST, value="/{oid}/state")
