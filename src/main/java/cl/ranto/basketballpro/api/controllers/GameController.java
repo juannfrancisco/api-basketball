@@ -1,12 +1,15 @@
 package cl.ranto.basketballpro.api.controllers;
 
-import cl.ranto.basketballpro.api.core.Game;
-import cl.ranto.basketballpro.api.core.GameStat;
-import cl.ranto.basketballpro.api.core.MatchStat;
+import cl.ranto.basketballpro.api.core.*;
+import cl.ranto.basketballpro.api.core.exceptions.ObjectNotFoundException;
 import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.services.GameService;
 import cl.ranto.basketballpro.api.services.GameStatServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,20 +23,34 @@ import java.util.List;
 @RequestMapping("/api/v1/games")
 public class GameController {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(GameController.class);
+
     @Autowired
     private GameService service;
 
     @Autowired
     private GameStatServices StatService;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public List<GameDTO> listAll(){
         return service.listAll();
     }
 
-    @RequestMapping(method = RequestMethod.GET, value="/{oid}")
-    public GameDTO findById( @PathVariable("oid") String oid ){
-        return service.findById(oid);
+    @GetMapping( "/{oid}" )
+    public ResponseEntity<GameDTO>  findById( @PathVariable("oid") String oid ){
+        try{
+            return new ResponseEntity<>(
+                    service.findById(oid),
+                    HttpStatus.OK);
+        }catch (ObjectNotFoundException ex){
+            return new ResponseEntity<>(
+                    HttpStatus.NOT_FOUND);
+        } catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value="/{oid}")
@@ -56,18 +73,31 @@ public class GameController {
         return service.getGameStats( oid );
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value="/{oid}/stats")
-    public GameStat save(@PathVariable("oid") String oid, @RequestBody GameStat stat){
+    @PutMapping("/{oid}/stats")
+    public ResponseEntity<GameStat> save(@PathVariable("oid") String oid, @RequestBody GameStat stat){
         try{
-            return service.addStat(oid,stat);
-        }catch (Exception ex){
-            return null;
-        }
+            return new ResponseEntity<>(
+                    service.addStat(oid,stat),
+                    HttpStatus.OK);
 
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @RequestMapping(method = RequestMethod.POST, value="/{oid}/state")
-    public void updateState(@PathVariable("oid") String oid ,  @RequestBody Game game){
-        service.updateState(game);
+    @PostMapping("/{oid}/state")
+    public ResponseEntity<Object> updateState(@PathVariable("oid") String oid ,  @RequestBody Game game){
+        try{
+            service.updateState(game);
+            return new ResponseEntity<>(
+                    HttpStatus.OK);
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 }

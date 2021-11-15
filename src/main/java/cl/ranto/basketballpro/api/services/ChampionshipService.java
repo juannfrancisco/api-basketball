@@ -2,11 +2,11 @@ package cl.ranto.basketballpro.api.services;
 
 
 import cl.ranto.basketballpro.api.core.*;
-import cl.ranto.basketballpro.api.dto.CourtDTO;
+import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
 import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.repositories.ChampionshipRepository;
-import cl.ranto.basketballpro.api.repositories.CourtRepository;
 import cl.ranto.basketballpro.api.repositories.GameRepository;
+import cl.ranto.basketballpro.api.utils.Constants;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class ChampionshipService {
     }
 
     public void deleteById( String oid ){
-        logger.info("championship OID : " + oid );
+        logger.info( Constants.LOG_CHAMPIONSHIP, oid );
         repository.deleteById(oid).block();
     }
 
@@ -66,32 +66,44 @@ public class ChampionshipService {
     }
 
     public List<Team> findTeamsByChampionship(Championship championship) {
-
-        return new ArrayList<>();
+        logger.info(Constants.LOG_CHAMPIONSHIP, championship.getOid() );
+        throw new UnsupportedOperationException();
     }
 
     public List<ChampionshipTeam> findTeamsStatsByChampionship(Championship championship) {
-        return new ArrayList<>();
+        logger.info(Constants.LOG_CHAMPIONSHIP, championship.getOid() );
+        throw new UnsupportedOperationException();
     }
 
-    public List<GameDTO> findMatchesByChampionship(Championship championship) {
-        Firestore db= FirestoreOptions.getDefaultInstance().getService();
-        DocumentReference championshipRef = db.collection("championships").document(championship.getOid());
-        List<GameDTO> games = new ArrayList<>();
-        ApiFuture<QuerySnapshot> qs = db.collection("games").whereEqualTo( "championship", championshipRef ).get();
+
+    /**
+     *
+     * @param championship
+     * @return
+     * @throws ServicesException
+     */
+    public List<GameDTO> findGamesByChampionship(Championship championship) throws ServicesException {
         try {
-            QuerySnapshot gamesSnapshot = qs.get();
-            List<QueryDocumentSnapshot> gamesDoc = gamesSnapshot.getDocuments();
+            Firestore db= FirestoreOptions.getDefaultInstance().getService();
+            DocumentReference championshipRef = db.collection(Constants.COLLECTION_CHAMPIONSHIPS).document(championship.getOid());
+            List<GameDTO> games = new ArrayList<>();
+            ApiFuture<QuerySnapshot> qs = db.collection( Constants.COLLECTION_GAMES).whereEqualTo( "championship", championshipRef ).get();
+            //QuerySnapshot gamesSnapshot = qs.get();
+            //List<QueryDocumentSnapshot> gamesDoc = gamesSnapshot.getDocuments();
             for (DocumentSnapshot document : qs.get().getDocuments()) {
                 Game game = document.toObject(Game.class);
                 games.add( new GameDTO( game ) );
             }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            return games;
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new ServicesException( "Ocurrio un error al obtener la informacion", e );
         }
-        return games;
     }
 
     public void addTeam(String oid, Team team) {
+        logger.info(Constants.LOG_CHAMPIONSHIP, oid );
+        logger.info("team OID {} ", team.getOid() );
+        throw new UnsupportedOperationException();
     }
 }

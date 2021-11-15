@@ -2,7 +2,7 @@ package cl.ranto.basketballpro.api.core;
 
 import com.google.cloud.firestore.annotation.DocumentId;
 
-public class GameStat {
+public class GameStat implements IResponse{
 
     @DocumentId
     private String oid;

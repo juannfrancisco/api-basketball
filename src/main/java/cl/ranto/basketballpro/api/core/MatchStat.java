@@ -18,12 +18,6 @@ public class MatchStat {
     private String teamOid;
     private String championshipOid;
 
-    /**
-     *
-     */
-    public MatchStat(){
-
-    }
 
     public String getOid() {
         return oid;

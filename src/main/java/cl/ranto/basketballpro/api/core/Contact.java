@@ -10,10 +10,6 @@ public class Contact {
     private String accountInstagram;
     private String accountTwitter;
 
-    public Contact(){
-
-    }
-
 
     public String getAddress() {
         return address;

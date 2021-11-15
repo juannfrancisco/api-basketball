@@ -2,12 +2,15 @@ package cl.ranto.basketballpro.api.services;
 
 
 import cl.ranto.basketballpro.api.core.*;
+import cl.ranto.basketballpro.api.core.exceptions.ObjectNotFoundException;
+import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
 import cl.ranto.basketballpro.api.dto.CourtDTO;
 import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.repositories.ChampionshipRepository;
 import cl.ranto.basketballpro.api.repositories.CourtRepository;
 import cl.ranto.basketballpro.api.repositories.GameRepository;
 import cl.ranto.basketballpro.api.repositories.TeamRepository;
+import cl.ranto.basketballpro.api.utils.Constants;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import org.slf4j.Logger;
@@ -16,14 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.print.Doc;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Service
 public class GameService {
 
-    private final static Logger logger = LoggerFactory.getLogger(GameService.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(GameService.class);
 
     @Autowired
     private GameRepository repository;
@@ -48,10 +50,11 @@ public class GameService {
     public List<GameDTO> listAll(){
         List<Game> games = repository.findAll().collectList().block();
         List<GameDTO> gamesDTO = new ArrayList<>();
-        games.forEach( game -> {
-            gamesDTO.add( this.toDTO( game ) );
-
-        });
+        if(null != games) {
+            games.forEach( game -> {
+                gamesDTO.add( this.toDTO( game ) );
+            });
+        }
         return gamesDTO;
     }
 
@@ -60,21 +63,23 @@ public class GameService {
      * @param oidChampionship
      * @return
      */
-    public List<GameDTO> findByChampionship(String oidChampionship){
-        List<GameDTO> gamesDTO = new ArrayList<>();
+    public List<GameDTO> findByChampionship(String oidChampionship) throws ServicesException {
         try
         {
+            List<GameDTO> gamesDTO = new ArrayList<>();
             Firestore db= FirestoreOptions.getDefaultInstance().getService();
-            Query query = db.collection("games").whereEqualTo( "championship", oidChampionship );
+            Query query = db.collection(Constants.COLLECTION_GAMES).whereEqualTo( "championship", oidChampionship );
             ApiFuture<QuerySnapshot> querySnapshot = query.get();
             for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
                 document.toObject(Game.class);
             }
+            return gamesDTO;
         }
-        catch (Exception ex){
-            logger.error(ex.getMessage(), ex);
+        catch (InterruptedException | ExecutionException ex){
+            Thread.currentThread().interrupt();
+            throw new ServicesException( "Ocurrio un error al obtener la informacion", ex );
         }
-        return gamesDTO;
+
     }
 
     /**
@@ -82,17 +87,18 @@ public class GameService {
      * @param oid
      * @return
      */
-    public GameDTO findById( String oid ){
+    public GameDTO findById( String oid ) throws ObjectNotFoundException {
         Game game =repository.findById( oid).block();
-        //List<GameStat> stats = getGameStats(oid);
-        //game.setStats(stats);
-
-        Championship championship = championshipRepository.findById( game.getChampionship().getId() ).block();
-        Court court = courtRepository.findById( game.getCourt().getId() ).block();
-        Team teamVisitor = teamRepository.findById( game.getVisitor().getId() ).block();
-        Team  teamLocal = teamRepository.findById( game.getLocal().getId() ).block();
-        GameDTO gameDTO = new GameDTO(game, new CourtDTO(court), championship, teamLocal ,teamVisitor );
-        return gameDTO;
+        if( null != game  ){
+            Championship championship = championshipRepository.findById( game.getChampionship().getId() ).block();
+            Court court = courtRepository.findById( game.getCourt().getId() ).block();
+            Team teamVisitor = teamRepository.findById( game.getVisitor().getId() ).block();
+            Team  teamLocal = teamRepository.findById( game.getLocal().getId() ).block();
+            GameDTO gameDTO = new GameDTO(game, new CourtDTO(court), championship, teamLocal ,teamVisitor );
+            return gameDTO;
+        }else{
+            throw new ObjectNotFoundException();
+        }
     }
 
 
@@ -103,23 +109,16 @@ public class GameService {
      */
     public List<GameStat> getGameStats( String oid ){
         List<GameStat> stats = new ArrayList<>();
-        try{
-            Firestore db= FirestoreOptions.getDefaultInstance().getService();
-            CollectionReference gameStats = db.collection("games").document(oid).collection("stats");
-
-            gameStats.listDocuments().forEach( documentReference -> {
-                try {
-                    GameStat gameStat = documentReference.get().get().toObject(GameStat.class);
-                    stats.add(gameStat);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } );
-
-
-        }catch (Exception ex){
-            ex.printStackTrace();
-        }
+        Firestore db= FirestoreOptions.getDefaultInstance().getService();
+        CollectionReference gameStats = db.collection(Constants.COLLECTION_GAMES).document(oid).collection("stats");
+        gameStats.listDocuments().forEach( documentReference -> {
+            try{
+                GameStat gameStat = documentReference.get().get().toObject(GameStat.class);
+                stats.add(gameStat);
+            }catch (InterruptedException | ExecutionException e) {
+                Thread.currentThread().interrupt();
+            }
+        } );
         return stats;
     }
 
@@ -142,7 +141,7 @@ public class GameService {
      * @param oid
      */
     public void deleteById( String oid ){
-        logger.info("championship OID : " + oid );
+        LOGGER.info("championship OID {}" , oid );
         repository.deleteById(oid).block();
     }
 
@@ -153,10 +152,10 @@ public class GameService {
      */
     public GameDTO save(GameDTO game){
         Firestore db= FirestoreOptions.getDefaultInstance().getService();
-        DocumentReference visitorRef = db.collection("teams").document(game.getVisitor().getOid());
-        DocumentReference localRef = db.collection("teams").document(game.getLocal().getOid());
-        DocumentReference courtRef = db.collection("courts").document(game.getCourt().getOid());
-        DocumentReference championshipRef = db.collection("championships").document(game.getChampionship().getOid());
+        DocumentReference visitorRef = db.collection( Constants.COLLECTION_TEAMS ).document(game.getVisitor().getOid());
+        DocumentReference localRef = db.collection( Constants.COLLECTION_TEAMS ).document(game.getLocal().getOid());
+        DocumentReference courtRef = db.collection( Constants.COLLECTION_COURTS ).document(game.getCourt().getOid());
+        DocumentReference championshipRef = db.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document(game.getChampionship().getOid());
 
         Game gameDocument = new Game();
         gameDocument.setChampionship( championshipRef );
@@ -182,18 +181,19 @@ public class GameService {
      *
      * @param game
      */
-    public void updateState(Game game) {
+    public void updateState(Game game) throws ServicesException {
         try{
             Firestore db= FirestoreOptions.getDefaultInstance().getService();
-            DocumentReference gameRef = db.collection("games").document(game.getOid());
+            DocumentReference gameRef = db.collection(Constants.COLLECTION_GAMES).document(game.getOid());
             Map<String, Object> data = new HashMap<>();
             data.put("state", GameState.FINALIZED.toString());
             data.put("localScore", game.getLocalScore());
             data.put("visitorScore", game.getVisitorScore());
             ApiFuture<WriteResult> writeResult = gameRef.update( data);
-            logger.info("Update time : " + writeResult.get().getUpdateTime());
-        }catch (Exception e){
-            logger.error(e.getMessage(),e);
+            LOGGER.info("Update time : {}" , writeResult.get().getUpdateTime());
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new ServicesException( "Ocurrio un error al guardar la informacion", e );
         }
     }
 
@@ -202,13 +202,19 @@ public class GameService {
      * @param gameOid
      * @param stat
      */
-    public GameStat addStat(String gameOid, GameStat stat) throws ExecutionException, InterruptedException {
+    public GameStat addStat(String gameOid, GameStat stat) throws ServicesException {
 
-        Firestore db= FirestoreOptions.getDefaultInstance().getService();
-        DocumentReference gameRef = db.collection("games").document(gameOid);
-        stat.setOid(UUID.randomUUID().toString());
-        ApiFuture<DocumentReference>  ref = gameRef.collection("stats").add(stat);
-        logger.info("Update time : " + ref.get().getId() );
-        return stat;
+        try {
+            Firestore db= FirestoreOptions.getDefaultInstance().getService();
+            DocumentReference gameRef = db.collection(Constants.COLLECTION_GAMES).document(gameOid);
+            stat.setOid(UUID.randomUUID().toString());
+            ApiFuture<DocumentReference>  ref = gameRef.collection( Constants.COLLECTION_STATS ).add(stat);
+            ref.get().getId();
+            return stat;
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new ServicesException( "Ocurrio un error al guardar la informacion", e );
+        }
+
     }
 }

@@ -1,14 +1,16 @@
 package cl.ranto.basketballpro.api.services;
 
 import cl.ranto.basketballpro.api.core.*;
+import cl.ranto.basketballpro.api.core.exceptions.ObjectNotFoundException;
+import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
 import cl.ranto.basketballpro.api.repositories.PlayerRepository;
 import cl.ranto.basketballpro.api.repositories.TeamRepository;
+import cl.ranto.basketballpro.api.utils.Constants;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -18,8 +20,7 @@ import java.util.concurrent.ExecutionException;
 @Service
 public class TeamService {
 
-    private final static Logger logger = LoggerFactory.getLogger(CourtService.class);
-    private static final String COLLECTION_TEAMS = "teams";
+    private  static final Logger LOGGER = LoggerFactory.getLogger(CourtService.class);
 
     @Autowired
     private TeamRepository repository;
@@ -39,11 +40,21 @@ public class TeamService {
         return repository.findByOidChampionship(oidChampionship).collectList().block();
     }
 
-    public Team findById( String oid ){
+    /**
+     *
+     * @param oid
+     * @return
+     * @throws ObjectNotFoundException
+     */
+    public Team findById( String oid ) throws ObjectNotFoundException {
         Team team = repository.findById( oid).block();
-        List<Player> players = repositoryPlayer.findByOidCurrentTeam(oid).collectList().block();
-        team.setPlayers(players);
-        return team;
+        if(null != team){
+            List<Player> players = repositoryPlayer.findByOidCurrentTeam(oid).collectList().block();
+            team.setPlayers(players);
+            return team;
+        }else{
+            throw new ObjectNotFoundException();
+        }
     }
 
     public void deleteById( String oid ){
@@ -61,20 +72,28 @@ public class TeamService {
      *
      * @param team
      * @return
-     * @throws ExecutionException
-     * @throws InterruptedException
      */
-    public Team update(Team team) throws ExecutionException, InterruptedException {
-        DocumentReference docRef = this.firestore.collection(COLLECTION_TEAMS).document(team.getOid());
-        Map<String, Object> data = new HashMap<>();
-        data.put("bio", team.getBio());
-        data.put("gender", team.getGender().toString());
-        data.put("category", team.getCategory().toString());
-        ApiFuture<WriteResult> writeResult = docRef.update( data );
-        logger.info("Update time : " + writeResult.get().getUpdateTime());
-        return team;
+    public Team update(Team team) throws ServicesException {
+        try{
+            DocumentReference docRef = this.firestore.collection(Constants.COLLECTION_TEAMS).document(team.getOid());
+            Map<String, Object> data = new HashMap<>();
+            data.put("bio", team.getBio());
+            data.put("gender", team.getGender().toString());
+            data.put("category", team.getCategory().toString());
+            ApiFuture<WriteResult> writeResult = docRef.update( data );
+            LOGGER.info("Update time : {}" ,writeResult.get().getUpdateTime());
+            return team;
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new ServicesException( "Ocurrio un error al guardar la informacion", e );
+        }
     }
 
+    /**
+     *
+     * @param player
+     * @return
+     */
     public Player addPlayer(Player player) {
         player.setOid(UUID.randomUUID().toString());
         repositoryPlayer.save(player).block();
@@ -95,51 +114,78 @@ public class TeamService {
      * @param oidTeam
      * @return
      */
-    public List<Player> findAllPlayersOrders( String oidTeam ) {
-        List<Player> players = new ArrayList<>();
+    public List<Player> findAllPlayersOrders( String oidTeam ) throws ServicesException {
+
         try {
-            ApiFuture<QuerySnapshot> query = this.firestore.collection(COLLECTION_TEAMS)
+            List<Player> players = new ArrayList<>();
+            ApiFuture<QuerySnapshot> query = this.firestore.collection(Constants.COLLECTION_TEAMS)
                     .whereEqualTo("oidCurrentTeam", oidTeam)
                     .orderBy("number").get();
             for (DocumentSnapshot document : query.get().getDocuments()) {
                 Player player = document.toObject(Player.class);
                 players.add(player);
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+            return players;
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new ServicesException( "Ocurrio un error al guardar la informacion", e );
         }
-        return players;
     }
 
-    public List<Player> findPlayersByName(String name) {
-        Team team = repository.findByNameURL( name ).block();
+    public List<Player> findPlayersByName(String name) throws ObjectNotFoundException {
+        Team team = this.findByName(name);
         List<Player> players = repositoryPlayer.findByOidCurrentTeam(team.getOid()).collectList().block();
         return players;
     }
 
-    public List<Championship> findChampionshipsByName(String name) {
+    public List<Championship> findChampionshipsByName(String name) throws ObjectNotFoundException {
+        Team team = this.findByName(name);
         return new ArrayList<>();
     }
 
-    public List<List<ChampionshipTeam>> findAllStandingsByName(String name) {
+    public List<List<ChampionshipTeam>> findAllStandingsByName(String name) throws ObjectNotFoundException {
+        Team team = this.findByName(name);
         return new ArrayList<>();
     }
 
-    public List<ChampionshipTeam> findStandingsByName(String name) {
+    public List<ChampionshipTeam> findStandingsByName(String name) throws ObjectNotFoundException {
+        Team team = this.findByName(name);
         return new ArrayList<>();
     }
 
-    public List<Game> findMatchesByName(String name) {
+    /**
+     *
+     * @param name
+     * @return
+     */
+    public List<Game> findGamesByName(String name) throws ObjectNotFoundException {
+        Team team = this.findByName(name);
         return new ArrayList<>();
     }
 
+    /**
+     *
+     * @param name
+     * @return
+     */
     public Game findLastMatch(String name) {
+        LOGGER.info("Ultimo partido de {}" , name);
         return new Game();
     }
 
-    public Team findByName(String name) {
-        return repository.findByNameURL(name).block();
+    /**
+     *
+     * @param name
+     * @return
+     * @throws ObjectNotFoundException
+     */
+    public Team findByName(String name) throws ObjectNotFoundException {
+        Team team = repository.findByNameURL(name).block();
+        if(null != team){
+            return team;
+        }
+        else{
+            throw new ObjectNotFoundException();
+        }
     }
 }

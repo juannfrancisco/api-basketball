@@ -32,7 +32,7 @@ public class CourtService {
     }
 
     public void deleteById( String oid ){
-        logger.info("Court OID : " + oid );
+        logger.info("Court OID : {}", oid );
         repository.deleteById(oid).block();
     }
 

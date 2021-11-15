@@ -21,6 +21,7 @@ import com.google.cloud.firestore.annotation.Exclude;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Juan Francisco Maldonado León - juan.maldonado.leon@gmail.com
@@ -192,6 +193,9 @@ public class Team {
 		}
 		return super.equals(obj);
 	}
-	
-	
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(oid);
+	}
 }

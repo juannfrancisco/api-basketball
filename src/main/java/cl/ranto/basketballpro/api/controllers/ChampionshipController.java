@@ -8,6 +8,8 @@ import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.services.ChampionshipService;
 import cl.ranto.basketballpro.api.services.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
@@ -21,7 +23,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/championships")
 public class ChampionshipController {
-
 
     @Autowired
     private ChampionshipService service;
@@ -70,8 +71,15 @@ public class ChampionshipController {
         return service.findTeamsStatsByChampionship(new Championship(oid));
     }
 
-    @RequestMapping(method = RequestMethod.GET, value="/{oid}/matches")
-    public List<GameDTO> getMatches(@PathVariable("oid") String oid ){
-        return service.findMatchesByChampionship(new Championship(oid));
+    @GetMapping("/{oid}/matches")
+    public ResponseEntity<List<GameDTO>> getGames(@PathVariable("oid") String oid ){
+        try {
+            return new ResponseEntity<>(
+                    service.findGamesByChampionship(new Championship(oid)),
+                    HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

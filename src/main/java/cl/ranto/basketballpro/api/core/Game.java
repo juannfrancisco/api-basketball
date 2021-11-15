@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016  Magno Labs
+ * Copyright (C) 2015-2016  Ranto
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * @author Juan Francisco Maldonado León - juan.maldonado.leon@gmail.com
- * Magno Labs - Santiago de Chile
+ * @author Juan Francisco Maldonado León - juan@ranto.cl
+ * Ranto - Santiago de Chile
  * Estadisticas de Deportes - Basketball
  */
 @Document(collectionName = "games")
@@ -199,5 +199,11 @@ public class Game {
 			return ((Game)object).getOid().equals( this.getOid() );
 		return super.equals(object);
 	}
-	
+
+
+	@Override
+	public int hashCode() {
+		return this.getOid().hashCode();
+	}
+
 }

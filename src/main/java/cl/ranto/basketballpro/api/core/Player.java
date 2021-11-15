@@ -20,6 +20,8 @@ package cl.ranto.basketballpro.api.core;
 import com.google.cloud.firestore.annotation.DocumentId;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
+import java.util.Objects;
+
 /**
  * @author Juan Francisco Maldonado León - juan.maldonado.leon@gmail.com
  * Magno Labs - Santiago de Chile
@@ -31,8 +33,6 @@ public class Player extends Person{
 	@DocumentId
 	private String oid;
 	private String oidCurrentTeam;
-
-	//private Team currentTeam;
 	private int number;
 	private Position position;
 	
@@ -113,4 +113,8 @@ public class Player extends Person{
 		return super.equals(object);
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(oid);
+	}
 }
