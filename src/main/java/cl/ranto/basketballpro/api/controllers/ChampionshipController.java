@@ -30,9 +30,13 @@ public class ChampionshipController {
     @Autowired
     private TeamService teamService;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public Flux<Championship> listAll(){
-        return service.listAll();
+    @GetMapping
+    public Flux<Championship> listAll( @RequestParam(required = false) String state ){
+        if( null == state || state.isEmpty() ){
+            return service.listAll();
+        }else{
+            return service.listAllByState(state);
+        }
     }
 
     @RequestMapping(method = RequestMethod.GET, value="/{oid}")

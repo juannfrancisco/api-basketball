@@ -34,28 +34,19 @@ public class Game {
 	@DocumentId
 	private String oid;
 	private Date date;
-
-
 	private DocumentReference visitor;
 	private DocumentReference local;
-	
 	private int visitorScore;
 	private int localScore;
-
-
 	private DocumentReference court;
-
-
 	private Referee referee;
-
-
 	private DocumentReference championship;
-	
 	private GameState state;
-
 	private List<GameStat> stats;
+	private List<GameStatPlayer> statsPlayer;
+	private List<ScoreboardItem> scoreboard;
 
-	
+
 	public Game(){
 	}
 
@@ -191,6 +182,23 @@ public class Game {
 
 	public void setStats(List<GameStat> stats) {
 		this.stats = stats;
+	}
+
+
+	public List<ScoreboardItem> getScoreboard() {
+		return scoreboard;
+	}
+
+	public void setScoreboard(List<ScoreboardItem> scoreboard) {
+		this.scoreboard = scoreboard;
+	}
+
+	public List<GameStatPlayer> getStatsPlayer() {
+		return statsPlayer;
+	}
+
+	public void setStatsPlayer(List<GameStatPlayer> statsPlayer) {
+		this.statsPlayer = statsPlayer;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package cl.ranto.basketballpro.api.controllers;
 
 import cl.ranto.basketballpro.api.core.*;
 import cl.ranto.basketballpro.api.core.exceptions.ObjectNotFoundException;
+import cl.ranto.basketballpro.api.dto.GameTeamDTO;
 import cl.ranto.basketballpro.api.services.TeamService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +17,7 @@ import java.util.List;
 @RequestMapping("/api/v1/teams")
 public class TeamController {
 
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(TeamController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TeamController.class);
 
     @Autowired
     private TeamService service;
@@ -32,7 +32,7 @@ public class TeamController {
 
         try {
             return new ResponseEntity<>(
-                    service.findById(oid),
+                    service.findByIdPlayers(oid),
                     HttpStatus.OK);
         }
         catch (ObjectNotFoundException e) {
@@ -45,15 +45,37 @@ public class TeamController {
         }
     }
 
+    @GetMapping("/{oid}/last-game")
+    @CrossOrigin("*")
+    public Game findLastGame(@PathVariable("name") String name ){
+        return service.findLastGame(name);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value="/n/{name}/last-match")
+    @CrossOrigin("*")
+    public Game findLastGameByName(@PathVariable("name") String name ){
+        return service.findLastGame(name);
+    }
+
 
     @RequestMapping(method = RequestMethod.DELETE, value="/{oid}")
     public void deteleById( @PathVariable("oid") String oid ){
         service.deleteById(oid);
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
-    public Team save(@RequestBody Team team){
-        return service.save(team);
+    @PutMapping
+    public ResponseEntity<Team> save(@RequestBody Team team){
+
+        try {
+            return new ResponseEntity<>(
+                    service.save(team),
+                    HttpStatus.OK);
+        }
+        catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping
@@ -86,7 +108,7 @@ public class TeamController {
     public ResponseEntity<Team> findByNameURL( @PathVariable("name") String name ){
         try {
             return new ResponseEntity<>(
-                    service.findByName(name),
+                    service.findByNameURL(name),
                     HttpStatus.OK);
         } catch (ObjectNotFoundException e) {
             return new ResponseEntity<>(
@@ -167,9 +189,9 @@ public class TeamController {
         }
     }
 
-    @GetMapping("/n/{name}/matches")
+    @GetMapping("/n/{name}/games")
     @CrossOrigin("*")
-    public ResponseEntity<List<Game>> findMatchesByNameURL(@PathVariable("name") String name ){
+    public ResponseEntity<List<GameTeamDTO>> findGamesByNameURL(@PathVariable("name") String name ){
 
         try {
             return new ResponseEntity<>(
@@ -185,10 +207,25 @@ public class TeamController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, value="/n/{name}/last-match")
+
+    @GetMapping("/{oid}/games")
     @CrossOrigin("*")
-    public Game findLastMatch(@PathVariable("name") String name ){
-        return service.findLastMatch(name);
+    public ResponseEntity<List<GameTeamDTO>> findGamesByID(
+            @PathVariable("oid") String oid,
+            @RequestParam(required = false) String state
+    ){
+        try {
+            return new ResponseEntity<>(
+                    service.findGamesById(oid, state),
+                    HttpStatus.OK);
+        } catch (ObjectNotFoundException e) {
+            return new ResponseEntity<>(
+                    HttpStatus.NOT_FOUND);
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 

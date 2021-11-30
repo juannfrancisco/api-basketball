@@ -16,6 +16,7 @@
  */
 package cl.ranto.basketballpro.api.core;
 
+import cl.ranto.basketballpro.api.core.refereences.GameTeam;
 import com.google.cloud.firestore.annotation.DocumentId;
 import com.google.cloud.firestore.annotation.Exclude;
 import org.springframework.cloud.gcp.data.firestore.Document;
@@ -35,6 +36,7 @@ public class Team {
 	private String oid;
 	private String nameURL;
 	private String name;
+	private String alias;
 	private String bio;
 	private String oidChampionship;
 	private Gender gender;
@@ -44,6 +46,7 @@ public class Team {
 
 	@Exclude
 	private List<Player> players;
+	private List<GameTeam> games;
 
 	/**
 	 * 
@@ -186,6 +189,24 @@ public class Team {
 		this.oidChampionship = oidChampionship;
 	}
 
+
+	public List<GameTeam> getGames() {
+		return games;
+	}
+
+	public void setGames(List<GameTeam> games) {
+		this.games = games;
+	}
+
+
+	public String getAlias() {
+		return alias;
+	}
+
+	public void setAlias(String alias) {
+		this.alias = alias;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if( obj instanceof Team ){
@@ -198,4 +219,6 @@ public class Team {
 	public int hashCode() {
 		return Objects.hash(oid);
 	}
+
+
 }

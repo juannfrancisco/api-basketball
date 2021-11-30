@@ -44,6 +44,10 @@ public class ChampionshipService {
         return repository.findAll();
     }
 
+    public Flux<Championship> listAllByState(String state){
+        return repository.findByState(state);
+    }
+
     public Championship findById( String oid ){
         return repository.findById( oid).block();
     }
@@ -88,8 +92,6 @@ public class ChampionshipService {
             DocumentReference championshipRef = db.collection(Constants.COLLECTION_CHAMPIONSHIPS).document(championship.getOid());
             List<GameDTO> games = new ArrayList<>();
             ApiFuture<QuerySnapshot> qs = db.collection( Constants.COLLECTION_GAMES).whereEqualTo( "championship", championshipRef ).get();
-            //QuerySnapshot gamesSnapshot = qs.get();
-            //List<QueryDocumentSnapshot> gamesDoc = gamesSnapshot.getDocuments();
             for (DocumentSnapshot document : qs.get().getDocuments()) {
                 Game game = document.toObject(Game.class);
                 games.add( new GameDTO( game ) );

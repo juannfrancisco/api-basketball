@@ -8,6 +8,7 @@ import reactor.core.publisher.Mono;
 
 public interface TeamRepository extends FirestoreReactiveRepository<Team> {
 
+    Mono<Team> findByName(String name);
     Mono<Team> findByNameURL(String nameURL);
     Flux<Team> findByOidChampionship(String oidChampionship);
 }

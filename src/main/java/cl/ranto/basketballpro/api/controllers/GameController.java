@@ -37,7 +37,7 @@ public class GameController {
     }
 
     @GetMapping( "/{oid}" )
-    public ResponseEntity<GameDTO>  findById( @PathVariable("oid") String oid ){
+    public ResponseEntity<GameDTO> findById( @PathVariable("oid") String oid ){
         try{
             return new ResponseEntity<>(
                     service.findById(oid),
@@ -58,9 +58,17 @@ public class GameController {
         service.deleteById(oid);
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
-    public GameDTO save(@RequestBody GameDTO game){
-        return service.save(game);
+    @PutMapping
+    public ResponseEntity<GameDTO> save(@RequestBody GameDTO game){
+        try{
+            return new ResponseEntity<>(
+                    service.save(game),
+                    HttpStatus.OK);
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @RequestMapping(method = RequestMethod.POST)
@@ -71,6 +79,50 @@ public class GameController {
     @RequestMapping(method = RequestMethod.GET, value="/{oid}/stats")
     public List<GameStat> findStatsByGame(@PathVariable("oid") String oid ){
         return service.getGameStats( oid );
+    }
+
+    @GetMapping("/{oid}/scoreboard")
+    public ResponseEntity<List<ScoreboardItem>> findScoreboard(@PathVariable("oid") String oid ){
+        try{
+            return new ResponseEntity<>(
+                    service.getScoreboard(oid),
+                    HttpStatus.OK);
+
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @GetMapping("/{oid}/stats-player")
+    public ResponseEntity<List<GameStatPlayer>> findStatsPlayer(@PathVariable("oid") String oid ){
+        try{
+            return new ResponseEntity<>(
+                    service.getGameStatsPlayer(oid),
+                    HttpStatus.OK);
+
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @PostMapping("/{oid}/stats-player")
+    public ResponseEntity<Object> calculateStats(@PathVariable("oid") String oid ){
+        try{
+            service.calculateStats(oid);
+            return new ResponseEntity<>(
+                    HttpStatus.OK);
+
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PutMapping("/{oid}/stats")

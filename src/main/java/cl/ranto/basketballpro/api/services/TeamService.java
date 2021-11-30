@@ -3,9 +3,12 @@ package cl.ranto.basketballpro.api.services;
 import cl.ranto.basketballpro.api.core.*;
 import cl.ranto.basketballpro.api.core.exceptions.ObjectNotFoundException;
 import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
+import cl.ranto.basketballpro.api.core.refereences.GameTeam;
+import cl.ranto.basketballpro.api.dto.GameTeamDTO;
 import cl.ranto.basketballpro.api.repositories.PlayerRepository;
 import cl.ranto.basketballpro.api.repositories.TeamRepository;
 import cl.ranto.basketballpro.api.utils.Constants;
+import cl.ranto.basketballpro.api.utils.StringsUtils;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import org.slf4j.Logger;
@@ -46,13 +49,58 @@ public class TeamService {
      * @return
      * @throws ObjectNotFoundException
      */
+    public Team findByIdPlayers( String oid ) throws ObjectNotFoundException {
+        Team team = this.findById(oid);
+        List<Player> players = repositoryPlayer.findByOidCurrentTeam(oid).collectList().block();
+        team.setPlayers(players);
+        return team;
+    }
+
+
+    /**
+     *
+     * @param oid
+     * @return
+     * @throws ObjectNotFoundException
+     */
     public Team findById( String oid ) throws ObjectNotFoundException {
         Team team = repository.findById( oid).block();
         if(null != team){
-            List<Player> players = repositoryPlayer.findByOidCurrentTeam(oid).collectList().block();
-            team.setPlayers(players);
             return team;
         }else{
+            throw new ObjectNotFoundException();
+        }
+    }
+
+
+    /**
+     *
+     * @param name
+     * @return
+     * @throws ObjectNotFoundException
+     */
+    public Team findByName( String name ) throws ObjectNotFoundException {
+        Team team = repository.findByName( name).block();
+        if(null != team){
+            return team;
+        }else{
+            throw new ObjectNotFoundException();
+        }
+    }
+
+
+    /**
+     *
+     * @param name
+     * @return
+     * @throws ObjectNotFoundException
+     */
+    public Team findByNameURL(String name) throws ObjectNotFoundException {
+        Team team = repository.findByNameURL(name).block();
+        if(null != team){
+            return team;
+        }
+        else{
             throw new ObjectNotFoundException();
         }
     }
@@ -61,10 +109,22 @@ public class TeamService {
         repository.deleteById(oid).block();
     }
 
-    public Team save(Team team){
-        team.setOid(UUID.randomUUID().toString());
-        repository.save(team).block();
-        return team;
+    /**
+     *
+     * @param team
+     * @return
+     * @throws ServicesException
+     */
+    public Team save(Team team) throws ServicesException {
+        try {
+            this.findById( StringsUtils.nameID( team.getName()) );
+            throw new ServicesException("Ya existe un equipo con el mismo nombre", null);
+        } catch (ObjectNotFoundException e) {
+            team.setOid(StringsUtils.nameID( team.getName() ));
+            team.setNameURL(StringsUtils.nameID(team.getNameURL()));
+            repository.save(team).block();
+            return team;
+        }
     }
 
 
@@ -153,14 +213,82 @@ public class TeamService {
         return new ArrayList<>();
     }
 
+
+
+    public List<GameTeamDTO> findGames(Team team, GameState state){
+        List<GameTeamDTO> gamesRef = new ArrayList<>();
+        Firestore db= FirestoreOptions.getDefaultInstance().getService();
+        DocumentReference teamRef = db.collection( Constants.COLLECTION_TEAMS ).document( team.getOid() );
+        ApiFuture<QuerySnapshot> queryGames = teamRef.collection( Constants.COLLECTION_GAMES ).whereEqualTo( "state", state ).get();
+
+        try{
+            for (DocumentSnapshot document : queryGames.get().getDocuments()) {
+                    GameTeam gameRef = document.toObject(GameTeam.class);
+                    GameTeamDTO dto = new GameTeamDTO();
+                    dto.setOid( gameRef.getOid() );
+                    dto.setDate( gameRef.getDate());
+                    dto.setType( gameRef.getType() );
+                    dto.setState( gameRef.getState() );
+                    dto.setNameTeam( gameRef.getNameTeam() );
+                    gamesRef.add(dto);
+            }
+        }catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+        }
+        return gamesRef;
+    }
+
+
+    /**
+     *
+     * @param team
+     * @return
+     */
+    public List<GameTeamDTO> findGames(Team team ){
+        List<GameTeamDTO> gamesRef = new ArrayList<>();
+        Firestore db= FirestoreOptions.getDefaultInstance().getService();
+        DocumentReference teamRef = db.collection( Constants.COLLECTION_TEAMS ).document( team.getOid() );
+        CollectionReference games = teamRef.collection( Constants.COLLECTION_GAMES );
+        games.listDocuments().forEach( documentReference -> {
+            try{
+                GameTeam gameRef = documentReference.get().get().toObject(GameTeam.class);
+                GameTeamDTO dto = new GameTeamDTO();
+                dto.setOid( gameRef.getOid() );
+                dto.setDate( gameRef.getDate());
+                dto.setType( gameRef.getType() );
+                dto.setState( gameRef.getState() );
+                dto.setNameTeam( gameRef.getNameTeam() );
+                gamesRef.add(dto);
+            }catch (InterruptedException | ExecutionException e) {
+                Thread.currentThread().interrupt();
+            }
+        } );
+        return gamesRef;
+    }
+
+
     /**
      *
      * @param name
      * @return
      */
-    public List<Game> findGamesByName(String name) throws ObjectNotFoundException {
+    public List<GameTeamDTO> findGamesByName(String name) throws ObjectNotFoundException {
         Team team = this.findByName(name);
-        return new ArrayList<>();
+        return findGames(team);
+    }
+
+
+    /**
+     *
+     * @param oid
+     * @return
+     */
+    public List<GameTeamDTO> findGamesById(String oid, String state) throws ObjectNotFoundException {
+        if(null != state && !state.isEmpty()){
+            return findGames( new Team(oid), GameState.valueOf(state) );
+        }else{
+            return findGames( new Team(oid) );
+        }
     }
 
     /**
@@ -168,24 +296,9 @@ public class TeamService {
      * @param name
      * @return
      */
-    public Game findLastMatch(String name) {
+    public Game findLastGame(String name) {
         LOGGER.info("Ultimo partido de {}" , name);
         return new Game();
     }
 
-    /**
-     *
-     * @param name
-     * @return
-     * @throws ObjectNotFoundException
-     */
-    public Team findByName(String name) throws ObjectNotFoundException {
-        Team team = repository.findByNameURL(name).block();
-        if(null != team){
-            return team;
-        }
-        else{
-            throw new ObjectNotFoundException();
-        }
-    }
 }

@@ -17,7 +17,7 @@ import java.util.UUID;
 @Service
 public class CourtService {
 
-    private final static Logger logger = LoggerFactory.getLogger(CourtService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtService.class);
 
     @Autowired
     private CourtRepository repository;
@@ -32,7 +32,7 @@ public class CourtService {
     }
 
     public void deleteById( String oid ){
-        logger.info("Court OID : {}", oid );
+        LOGGER.info("Court OID : {}", oid );
         repository.deleteById(oid).block();
     }
 
