@@ -33,6 +33,7 @@ public class Championship {
 	private String name;
 	private String description;
 	private ChampionshipState state;
+	private ChampionshipConfig config;
 	
 	/**
 	 * 
@@ -96,5 +97,13 @@ public class Championship {
 
 	public void setState(ChampionshipState state) {
 		this.state = state;
+	}
+
+	public ChampionshipConfig getConfig() {
+		return config;
+	}
+
+	public void setConfig(ChampionshipConfig config) {
+		this.config = config;
 	}
 }

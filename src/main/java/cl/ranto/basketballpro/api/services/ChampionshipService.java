@@ -18,7 +18,6 @@ import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -57,8 +56,14 @@ public class ChampionshipService {
         repository.deleteById(oid).block();
     }
 
+    /**
+     *
+     * @param championship
+     * @return
+     */
     public Championship save(Championship championship){
-        championship.setOid(UUID.randomUUID().toString());
+        //championship.setOid(UUID.randomUUID().toString());
+        championship.setState( ChampionshipState.PENDING );
         repository.save(championship).block();
         return championship;
     }
