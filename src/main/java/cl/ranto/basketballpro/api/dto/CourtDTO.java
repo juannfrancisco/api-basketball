@@ -15,6 +15,10 @@ public class CourtDTO {
 
     }
 
+    public CourtDTO(String oid) {
+        this.oid = oid;
+    }
+
     public CourtDTO(Court court){
         this.setOid( court.getOid() );
         this.setName( court.getName() );

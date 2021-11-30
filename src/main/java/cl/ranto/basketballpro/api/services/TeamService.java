@@ -122,6 +122,7 @@ public class TeamService {
         } catch (ObjectNotFoundException e) {
             team.setOid(StringsUtils.nameID( team.getName() ));
             team.setNameURL(StringsUtils.nameID(team.getNameURL()));
+            team.setAlias(  team.getAlias().toLowerCase() );
             repository.save(team).block();
             return team;
         }

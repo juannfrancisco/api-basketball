@@ -16,12 +16,7 @@ import java.util.concurrent.ExecutionException;
 @Service
 public class TeamChampionshipDAO {
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(TeamChampionshipDAO.class);
-
-    @Autowired
-    private CourtRepository repository;
-
 
     /**
      *

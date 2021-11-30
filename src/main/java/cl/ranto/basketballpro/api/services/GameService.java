@@ -11,6 +11,9 @@ import cl.ranto.basketballpro.api.repositories.ChampionshipRepository;
 import cl.ranto.basketballpro.api.repositories.CourtRepository;
 import cl.ranto.basketballpro.api.repositories.GameRepository;
 import cl.ranto.basketballpro.api.repositories.TeamRepository;
+import cl.ranto.basketballpro.api.services.dao.GameDAO;
+import cl.ranto.basketballpro.api.services.dao.GameTeamDAO;
+import cl.ranto.basketballpro.api.services.dao.TeamDAO;
 import cl.ranto.basketballpro.api.utils.Constants;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
@@ -41,7 +44,13 @@ public class GameService {
     private CourtRepository courtRepository;
 
     @Autowired
-    private FirestoreTemplate firestoreTemplate;
+    private GameDAO gameDAO;
+
+    @Autowired
+    private TeamDAO teamDAO;
+
+    @Autowired
+    private GameTeamDAO gameTeamDAO;
 
 
     /**
@@ -298,16 +307,18 @@ public class GameService {
      * @return
      */
     public Game dtoToObject(GameDTO game,
+                            Team local,
+                            Team visitor,
                             DocumentReference visitorRef,
                             DocumentReference localRef,
                             DocumentReference courtRef,
                             DocumentReference championshipRef){
         Game gameDocument = new Game();
+        gameDocument.setOid( local.getAlias() + "-vs-" + visitor.getAlias()+"-"+game.getDate().getTime() );
         gameDocument.setChampionship( championshipRef );
         gameDocument.setCourt( courtRef );
         gameDocument.setVisitor( visitorRef );
         gameDocument.setLocal( localRef );
-        gameDocument.setOid(UUID.randomUUID().toString());
         gameDocument.setDate( game.getDate() );
         gameDocument.setState( GameState.PENDING );
         gameDocument.setStats( new ArrayList<>() );
@@ -324,58 +335,22 @@ public class GameService {
         repository.deleteById(oid).block();
     }
 
-    /**
-     *
-     * @param game
-     * @return
-     */
-    public GameDTO save(GameDTO game) throws ServicesException, ObjectNotFoundException {
-        Firestore db= FirestoreOptions.getDefaultInstance().getService();
-        DocumentReference visitorRef = db.collection( Constants.COLLECTION_TEAMS ).document(game.getVisitor().getOid());
-        DocumentReference localRef = db.collection( Constants.COLLECTION_TEAMS ).document(game.getLocal().getOid());
-        DocumentReference courtRef = db.collection( Constants.COLLECTION_COURTS ).document(game.getCourt().getOid());
-        DocumentReference championshipRef = db.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document(game.getChampionship().getOid());
-        Game gameDocument =  dtoToObject(game, visitorRef, localRef, courtRef, championshipRef);
-        repository.save(gameDocument).block();
-        DocumentReference gameRef = db.collection(Constants.COLLECTION_GAMES).document(gameDocument.getOid());
-
-
-        try{
-            Team teamVisitor = visitorRef.get().get().toObject(Team.class);
-            Team teamLocal = localRef.get().get().toObject(Team.class);
-
-            addGameRef( visitorRef, gameRef, gameDocument , TypeTeam.VISITOR , teamLocal );
-            addGameRef( localRef, gameRef, gameDocument, TypeTeam.LOCAL, teamVisitor );
-
-        }catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt();
-            throw new ObjectNotFoundException();
-        }
-
-        return game;
-    }
-
 
     /**
      *
-     * @param teamRef
-     * @param gameRef
-     * @param game
-     * @param type
+     * @param gameDTO
      * @return
      * @throws ServicesException
+     * @throws ObjectNotFoundException
      */
-    public GameTeam addGameRef(DocumentReference teamRef, DocumentReference gameRef, Game game, TypeTeam type, Team team) throws ServicesException {
-
-        try {
-            GameTeam gameReference = new GameTeam(game.getOid(), gameRef, game.getDate(), type, team.getName(), GameState.PENDING);
-            ApiFuture<DocumentReference>  ref = teamRef.collection( Constants.COLLECTION_GAMES ).add(gameReference);
-            ref.get().getId();
-            return gameReference;
-        } catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt();
-            throw new ServicesException( "Ocurrio un error al guardar la informacion", e );
-        }
+    public GameDTO save(GameDTO gameDTO) throws ServicesException, ObjectNotFoundException {
+        Team visitor = this.teamDAO.findById(gameDTO.getVisitor().getOid() );
+        Team local = this.teamDAO.findById( gameDTO.getLocal().getOid() );
+        gameDTO.setOid( String.format("%s-vs-%s-%s", local.getAlias(), visitor.getAlias(),gameDTO.getDate().getTime() ) );
+        Game game = this.gameDAO.DTOtoObject(gameDTO);
+        gameDAO.save(game);
+        gameTeamDAO.addGameRef(game, local, visitor);
+        return gameDTO;
     }
 
     /**

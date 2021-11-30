@@ -4,14 +4,16 @@ package cl.ranto.basketballpro.api.controllers;
 import cl.ranto.basketballpro.api.core.Championship;
 import cl.ranto.basketballpro.api.core.ChampionshipTeam;
 import cl.ranto.basketballpro.api.core.Team;
+import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
 import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.services.ChampionshipService;
 import cl.ranto.basketballpro.api.services.TeamService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -24,6 +26,8 @@ import java.util.List;
 @RequestMapping("/api/v1/championships")
 public class ChampionshipController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChampionshipController.class);
+
     @Autowired
     private ChampionshipService service;
 
@@ -31,11 +35,15 @@ public class ChampionshipController {
     private TeamService teamService;
 
     @GetMapping
-    public Flux<Championship> listAll( @RequestParam(required = false) String state ){
-        if( null == state || state.isEmpty() ){
-            return service.listAll();
-        }else{
-            return service.listAllByState(state);
+    public ResponseEntity<List<Championship>> listAll( @RequestParam(required = false) String state ){
+        try {
+            return new ResponseEntity<>(
+                    service.listAllByState(state),
+                    HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(),e);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -56,7 +64,7 @@ public class ChampionshipController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public Championship update( @RequestBody Championship championship){
+    public Championship update( @RequestBody Championship championship) throws ServicesException {
         return service.update(championship);
     }
 
@@ -75,7 +83,7 @@ public class ChampionshipController {
         return service.findTeamsStatsByChampionship(new Championship(oid));
     }
 
-    @GetMapping("/{oid}/matches")
+    @GetMapping("/{oid}/games")
     public ResponseEntity<List<GameDTO>> getGames(@PathVariable("oid") String oid ){
         try {
             return new ResponseEntity<>(
