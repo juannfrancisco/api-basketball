@@ -24,7 +24,7 @@ steps:
       - '--image'
       - 'gcr.io/$PROJECT_ID/basketball-pro-api:$BUILD_ID'
       - '--region'
-      - 'us-east1'
+      - 'us-east4'
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
