@@ -1,12 +1,11 @@
 package cl.ranto.basketballpro.api.controllers;
 
-
-import cl.ranto.basketballpro.api.core.Championship;
-import cl.ranto.basketballpro.api.core.ChampionshipTeam;
-import cl.ranto.basketballpro.api.core.Team;
-import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
+import cl.ranto.basketballpro.api.controllers.interfaces.IChampionshipController;
+import cl.ranto.basketballpro.api.core.*;
+import cl.ranto.basketballpro.api.core.exceptions.ObjectNotFoundException;
 import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.services.ChampionshipService;
+import cl.ranto.basketballpro.api.services.GameService;
 import cl.ranto.basketballpro.api.services.TeamService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/championships")
-public class ChampionshipController {
+public class ChampionshipController implements IChampionshipController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChampionshipController.class);
 
@@ -32,10 +31,13 @@ public class ChampionshipController {
     private ChampionshipService service;
 
     @Autowired
+    private GameService gameService;
+
+    @Autowired
     private TeamService teamService;
 
-    @GetMapping
-    public ResponseEntity<List<Championship>> listAll( @RequestParam(required = false) String state ){
+
+    public ResponseEntity<List<Championship>> listAll(String state ){
         try {
             return new ResponseEntity<>(
                     service.listAllByState(state),
@@ -47,51 +49,161 @@ public class ChampionshipController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, value="/{oid}")
-    public Championship findById( @PathVariable("oid") String oid ){
-        return service.findById(oid);
+    public ResponseEntity<Championship> findById( String oid ){
+        try {
+            return new ResponseEntity<>(
+                    service.findById(oid),
+                    HttpStatus.OK);
+        } catch (ObjectNotFoundException e) {
+            LOGGER.error(e.getMessage(),e);
+            return new ResponseEntity<>(
+                    HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(),e);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 
-    @RequestMapping(method = RequestMethod.DELETE, value="/{oid}")
-    public void deleteById( @PathVariable("oid") String oid ){
+    public void deleteById( String oid ){
         service.deleteById(oid);
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
-    public Championship save( @RequestBody Championship championship){
+    public Championship save( Championship championship){
         return service.save(championship);
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public Championship update( @RequestBody Championship championship) throws ServicesException {
-        return service.update(championship);
-    }
+    public Championship update(Championship championship) {
+        try{
+            return service.update(championship);
+        }
+        catch (Exception ex){
+            return null;
+        }
 
-    @RequestMapping(method = RequestMethod.PUT, value="/{oid}/teams")
-    public void addTeam( @PathVariable("oid") String oid , @RequestBody Team team){
+    }
+    public void addTeam( String oid ,Team team){
         service.addTeam(oid, team);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value="/{oid}/teams")
-    public List<Team> getTeams(@PathVariable("oid") String oid ){
+    public List<Team> getTeams(String oid ){
         return teamService.findByChampionship(oid);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value="/{oid}/teams-stats")
-    public List<ChampionshipTeam> getTeamsStats(@PathVariable("oid") String oid ){
+    public List<ChampionshipTeam> getTeamsStats(String oid ){
         return service.findTeamsStatsByChampionship(new Championship(oid));
     }
 
-    @GetMapping("/{oid}/games")
-    public ResponseEntity<List<GameDTO>> getGames(@PathVariable("oid") String oid ){
+    public List<GameStat> findStatsByGame(String oid, String oidGame ){
+        return gameService.getGameStats( oidGame, oid  );
+    }
+
+    public ResponseEntity<GameStat> save(String oid,
+                                         String oidGame,
+                                         GameStat stat){
+        try{
+            return new ResponseEntity<>(
+                    gameService.addStat(oidGame,oid,stat),
+                    HttpStatus.OK);
+
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<GameDTO> getGame(
+            String oid,
+            String oidGame ){
         try {
             return new ResponseEntity<>(
-                    service.findGamesByChampionship(new Championship(oid)),
+                    gameService.findById(oidGame, oid),
                     HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    public ResponseEntity<List<GameDTO>> getGames(String state, String oid ){
+        try {
+            return new ResponseEntity<>(
+                    service.findGamesByChampionship(new Championship(oid),state),
+                    HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<GameDTO> save(String oid , GameDTO game){
+        try{
+            return new ResponseEntity<>(
+                    gameService.save( new Championship(oid),  game),
+                    HttpStatus.OK);
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<List<ScoreboardItem>> findScoreboard(String oidChampionship, String oidGame ){
+        try{
+            return new ResponseEntity<>(
+                    gameService.getScoreboard(oidChampionship, oidGame),
+                    HttpStatus.OK);
+
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public ResponseEntity<Object> updateState(String oid ,
+                                              String oidGame,
+                                              Game game){
+        try{
+            gameService.updateState( game , oid);
+            return new ResponseEntity<>(
+                    HttpStatus.OK);
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<List<GameStatPlayer>> findStatsPlayer(String oid,
+                                                                String oidGame ){
+        try{
+            return new ResponseEntity<>(
+                    gameService.getGameStatsPlayer(oidGame, oid),
+                    HttpStatus.OK);
+
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public ResponseEntity<Object> calculateStats(String oid, String oidGame ){
+        try{
+            gameService.calculateStats(oidGame, oid);
+            return new ResponseEntity<>(
+                    HttpStatus.OK);
+
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

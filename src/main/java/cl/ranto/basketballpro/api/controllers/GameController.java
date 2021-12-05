@@ -31,20 +31,16 @@ public class GameController {
     @Autowired
     private GameStatServices StatService;
 
-    @GetMapping
-    public List<GameDTO> listAll(){
-        return service.listAll();
-    }
 
     @GetMapping( "/{oid}" )
     public ResponseEntity<GameDTO> findById( @PathVariable("oid") String oid ){
         try{
             return new ResponseEntity<>(
-                    service.findById(oid),
+                   // service.findById(oid),
                     HttpStatus.OK);
-        }catch (ObjectNotFoundException ex){
-            return new ResponseEntity<>(
-                    HttpStatus.NOT_FOUND);
+      //  }catch (ObjectNotFoundException ex){
+       //     return new ResponseEntity<>(
+       //             HttpStatus.NOT_FOUND);
         } catch (Exception ex){
             LOGGER.error(ex.getMessage(), ex);
             return new ResponseEntity<>(
@@ -62,7 +58,7 @@ public class GameController {
     public ResponseEntity<GameDTO> save(@RequestBody GameDTO game){
         try{
             return new ResponseEntity<>(
-                    service.save(game),
+                    //service.save(game),
                     HttpStatus.OK);
         }catch (Exception ex){
             LOGGER.error(ex.getMessage(), ex);
@@ -76,16 +72,13 @@ public class GameController {
         return service.update(game);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value="/{oid}/stats")
-    public List<GameStat> findStatsByGame(@PathVariable("oid") String oid ){
-        return service.getGameStats( oid );
-    }
+
 
     @GetMapping("/{oid}/scoreboard")
     public ResponseEntity<List<ScoreboardItem>> findScoreboard(@PathVariable("oid") String oid ){
         try{
             return new ResponseEntity<>(
-                    service.getScoreboard(oid),
+     //               service.getScoreboard(oid),
                     HttpStatus.OK);
 
         }catch (Exception ex){
@@ -100,7 +93,7 @@ public class GameController {
     public ResponseEntity<List<GameStatPlayer>> findStatsPlayer(@PathVariable("oid") String oid ){
         try{
             return new ResponseEntity<>(
-                    service.getGameStatsPlayer(oid),
+                    //service.getGameStatsPlayer(oid),
                     HttpStatus.OK);
 
         }catch (Exception ex){
@@ -114,7 +107,7 @@ public class GameController {
     @PostMapping("/{oid}/stats-player")
     public ResponseEntity<Object> calculateStats(@PathVariable("oid") String oid ){
         try{
-            service.calculateStats(oid);
+            //service.calculateStats(oid);
             return new ResponseEntity<>(
                     HttpStatus.OK);
 
@@ -125,11 +118,17 @@ public class GameController {
         }
     }
 
+
+    @GetMapping("/{oid}/stats")
+    public List<GameStat> findStatsByGame(@PathVariable("oid") String oid ){
+        return null; //service.getGameStats( oid );
+    }
+
     @PutMapping("/{oid}/stats")
     public ResponseEntity<GameStat> save(@PathVariable("oid") String oid, @RequestBody GameStat stat){
         try{
             return new ResponseEntity<>(
-                    service.addStat(oid,stat),
+                    //service.addStat(oid,stat),
                     HttpStatus.OK);
 
         }catch (Exception ex){
@@ -142,7 +141,7 @@ public class GameController {
     @PostMapping("/{oid}/state")
     public ResponseEntity<Object> updateState(@PathVariable("oid") String oid ,  @RequestBody Game game){
         try{
-            service.updateState(game);
+            //service.updateState(game);
             return new ResponseEntity<>(
                     HttpStatus.OK);
         }catch (Exception ex){

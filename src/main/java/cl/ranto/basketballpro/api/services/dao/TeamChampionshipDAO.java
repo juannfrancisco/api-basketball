@@ -2,12 +2,10 @@ package cl.ranto.basketballpro.api.services.dao;
 
 import cl.ranto.basketballpro.api.core.Championship;
 import cl.ranto.basketballpro.api.core.refereences.TeamChampionship;
-import cl.ranto.basketballpro.api.repositories.CourtRepository;
 import cl.ranto.basketballpro.api.utils.Constants;
 import com.google.cloud.firestore.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;

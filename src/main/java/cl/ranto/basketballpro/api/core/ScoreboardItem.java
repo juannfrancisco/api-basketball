@@ -11,6 +11,18 @@ public class ScoreboardItem {
     private String quarter;
 
 
+    public ScoreboardItem() {
+        this.setLocalPoints(0);
+        this.setVisitorPoints(0);
+        this.setQuarter("");
+    }
+
+    public ScoreboardItem(Integer localPoints, Integer visitorPoints, String quarter) {
+        this.localPoints = localPoints;
+        this.visitorPoints = visitorPoints;
+        this.quarter = quarter;
+    }
+
     public String getOid() {
         return oid;
     }

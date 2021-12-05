@@ -20,6 +20,8 @@ package cl.ranto.basketballpro.api.core;
 import com.google.cloud.firestore.annotation.DocumentId;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
+import java.util.List;
+
 /**
  * @author Juan Francisco Maldonado León - juan.maldonado.leon@gmail.com
  * Magno Labs - Santiago de Chile
@@ -34,6 +36,7 @@ public class Championship {
 	private String description;
 	private ChampionshipState state;
 	private ChampionshipConfig config;
+	private List<Game> games;
 	
 	/**
 	 * 
@@ -105,5 +108,13 @@ public class Championship {
 
 	public void setConfig(ChampionshipConfig config) {
 		this.config = config;
+	}
+
+	public List<Game> getGames() {
+		return games;
+	}
+
+	public void setGames(List<Game> games) {
+		this.games = games;
 	}
 }

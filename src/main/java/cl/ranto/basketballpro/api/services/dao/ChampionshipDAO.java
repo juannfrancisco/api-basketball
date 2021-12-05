@@ -1,7 +1,7 @@
 package cl.ranto.basketballpro.api.services.dao;
 
 import cl.ranto.basketballpro.api.core.Championship;
-import cl.ranto.basketballpro.api.core.Game;
+import cl.ranto.basketballpro.api.core.exceptions.ObjectNotFoundException;
 import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
 import cl.ranto.basketballpro.api.repositories.ChampionshipRepository;
 import cl.ranto.basketballpro.api.utils.Constants;
@@ -43,8 +43,13 @@ public class ChampionshipDAO {
         return repository.findByState(state).collectList().block();
     }
 
-    public Championship findById( String oid ){
-        return repository.findById( oid).block();
+    public Championship findById( String oid ) throws ObjectNotFoundException {
+        Championship championship = repository.findById( oid).block();
+        if(null != championship){
+            return championship;
+        }else{
+            throw new ObjectNotFoundException();
+        }
     }
 
     public void deleteById( String oid ){

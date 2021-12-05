@@ -2,16 +2,17 @@ package cl.ranto.basketballpro.api.services;
 
 
 import cl.ranto.basketballpro.api.core.Court;
+import cl.ranto.basketballpro.api.core.exceptions.ObjectNotFoundException;
 import cl.ranto.basketballpro.api.dto.CourtDTO;
-import cl.ranto.basketballpro.api.repositories.CourtRepository;
+import cl.ranto.basketballpro.api.services.dao.CourtDAO;
 import com.google.cloud.firestore.GeoPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -20,46 +21,41 @@ public class CourtService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtService.class);
 
     @Autowired
-    private CourtRepository repository;
+    private CourtDAO dao;
 
 
-    public Flux<Court> listAll(){
-        return repository.findAll();
+    public List<Court> listAll(){
+        return dao.listAll();
     }
 
-    public Court findById( String oid ){
-        return repository.findById( oid).block();
+    public Court findById( String oid ) throws ObjectNotFoundException {
+        return dao.findById( oid);
     }
 
     public void deleteById( String oid ){
-        LOGGER.info("Court OID : {}", oid );
-        repository.deleteById(oid).block();
+        dao.deleteById(oid);
     }
 
     public CourtDTO save(CourtDTO court){
-
         Court court1 = new Court();
         court1.setOid(UUID.randomUUID().toString());
         court1.setDescription(court.getDescription());
         court1.setName(court.getName());
         court1.setSpectators(court.getSpectators());
         court1.setLocation( new GeoPoint(court.getLocation().getLatitude(), court.getLocation().getLongitude()));
-        repository.save(court1).block();
-        court.setOid( court1.getOid() );
+        court.setOid( dao.save(court1).getOid() );
         return court;
     }
 
 
     public CourtDTO update(CourtDTO court){
-
         Court court1 = new Court();
         court1.setOid(court.getOid());
         court1.setDescription(court.getDescription());
         court1.setName(court.getName());
         court1.setSpectators(court.getSpectators());
         court1.setLocation( new GeoPoint(court.getLocation().getLatitude(), court.getLocation().getLongitude()));
-        repository.save(court1).block();
-        court.setOid( court1.getOid() );
+        court.setOid( dao.save(court1).getOid() );
         return court;
     }
 

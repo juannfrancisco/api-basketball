@@ -5,7 +5,6 @@ import cl.ranto.basketballpro.api.core.*;
 import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
 import cl.ranto.basketballpro.api.dto.CourtDTO;
 import cl.ranto.basketballpro.api.dto.GameDTO;
-import cl.ranto.basketballpro.api.repositories.GameRepository;
 import cl.ranto.basketballpro.api.utils.Constants;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
@@ -13,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -22,9 +23,16 @@ public class GameDAO {
     @Autowired
     private Firestore firestore;
 
-
-    @Autowired
-    private GameRepository repository;
+    public Game findById(String oid, Championship championship) throws ServicesException {
+        try{
+            DocumentReference championshipRef = this.firestore.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document( championship.getOid() );
+            DocumentReference gameRef = championshipRef.collection( Constants.COLLECTION_GAMES ).document( oid );
+            return gameRef.get().get().toObject( Game.class );
+        }catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new ServicesException(e.getMessage(), e);
+        }
+    }
 
     /**
      *
@@ -33,29 +41,91 @@ public class GameDAO {
      * @throws ServicesException
      */
     public List<Game> findAllGamesByChampionship(Championship championship) throws ServicesException {
-        try {
-            DocumentReference championshipRef = this.firestore.collection(Constants.COLLECTION_CHAMPIONSHIPS).document(championship.getOid());
+        try{
             List<Game> games = new ArrayList<>();
-            ApiFuture<QuerySnapshot> qs = this.firestore.collection( Constants.COLLECTION_GAMES).whereEqualTo( "championship", championshipRef ).get();
-            for (DocumentSnapshot document : qs.get().getDocuments()) {
+            DocumentReference championshipRef = this.firestore.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document( championship.getOid() );
+            CollectionReference gamesCollection = championshipRef.collection( Constants.COLLECTION_GAMES );
+            for( DocumentReference ref :  gamesCollection.listDocuments() ){
+                games.add( ref.get().get().toObject(Game.class) );
+            }
+            return games;
+        }catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new ServicesException(e.getMessage(), e);
+        }
+    }
+
+
+
+    /**
+     *
+     * @param championship
+     * @return
+     * @throws ServicesException
+     */
+    public List<Game> findAllGamesByState( GameState state, Championship championship) throws ServicesException {
+        try{
+            List<Game> games = new ArrayList<>();
+            DocumentReference championshipRef = this.firestore.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document( championship.getOid() );
+            Query query = championshipRef.collection( Constants.COLLECTION_GAMES ).whereEqualTo("state", state );
+
+            for (DocumentSnapshot document : query.get().get().getDocuments()){
                 games.add( document.toObject(Game.class) );
             }
             return games;
-        } catch (InterruptedException | ExecutionException e) {
+        }catch (InterruptedException | ExecutionException e) {
             Thread.currentThread().interrupt();
-            throw new ServicesException( "Ocurrio un error al obtener la informacion", e );
+            throw new ServicesException(e.getMessage(), e);
         }
+    }
+
+    /**
+     *
+     * @param championship
+     * @param game
+     * @return
+     * @throws ServicesException
+     */
+    public Game save(Championship championship, Game game) throws ServicesException {
+        try{
+            DocumentReference championshipRef = this.firestore.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document( championship.getOid() );
+            ApiFuture<WriteResult> result = championshipRef.collection(Constants.COLLECTION_GAMES).document(game.getOid()).set(game);
+            result.get().getUpdateTime();
+            return game;
+
+        }catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new ServicesException(e.getMessage(), e);
+        }
+    }
+
+
+    public void deleteById(String oid) {
+        throw new UnsupportedOperationException();
     }
 
 
     /**
      *
      * @param game
-     * @return
      */
-    public Game save(Game game){
-        return repository.save(game).block();
+    public void updateState(Game game, Championship championship) throws ServicesException {
+        try{
+            DocumentReference championshipRef = this.firestore.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document( championship.getOid() );
+            DocumentReference gameRef = championshipRef.collection(Constants.COLLECTION_GAMES).document(game.getOid());
+            Map<String, Object> data = new HashMap<>();
+            data.put("state", GameState.FINALIZED.toString());
+            data.put("localScore", game.getLocalScore());
+            data.put("visitorScore", game.getVisitorScore());
+            ApiFuture<WriteResult> writeResult = gameRef.update( data);
+            writeResult.get().getUpdateTime();
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new ServicesException( "Ocurrio un error al guardar la informacion", e );
+        }
     }
+
+
 
 
     /**

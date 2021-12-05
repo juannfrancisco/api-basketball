@@ -28,7 +28,7 @@ import java.util.List;
  * Ranto - Santiago de Chile
  * Estadisticas de Deportes - Basketball
  */
-@Document(collectionName = "games")
+//@Document(collectionName = "games")
 public class Game {
 
 	@DocumentId
