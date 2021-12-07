@@ -3,10 +3,12 @@ package cl.ranto.basketballpro.api.services;
 import cl.ranto.basketballpro.api.core.*;
 import cl.ranto.basketballpro.api.core.exceptions.ObjectNotFoundException;
 import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
-import cl.ranto.basketballpro.api.core.refereences.GameTeam;
+import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.dto.GameTeamDTO;
 import cl.ranto.basketballpro.api.repositories.PlayerRepository;
 import cl.ranto.basketballpro.api.repositories.TeamRepository;
+import cl.ranto.basketballpro.api.services.dao.GameDAO;
+import cl.ranto.basketballpro.api.services.dao.GameTeamDAO;
 import cl.ranto.basketballpro.api.utils.Constants;
 import cl.ranto.basketballpro.api.utils.StringsUtils;
 import com.google.api.core.ApiFuture;
@@ -30,6 +32,15 @@ public class TeamService {
 
     @Autowired
     private PlayerRepository repositoryPlayer;
+
+    @Autowired
+    private GameTeamDAO gameTeamDAO;
+
+    @Autowired
+    private GameDAO gameDAO;
+
+    @Autowired
+    private GameService gameService;
 
     @Autowired
     private Firestore firestore;
@@ -170,28 +181,6 @@ public class TeamService {
         return repositoryPlayer.findByOidCurrentTeam(oidTeam);
     }
 
-    /**
-     *
-     * @param oidTeam
-     * @return
-     */
-    public List<Player> findAllPlayersOrders( String oidTeam ) throws ServicesException {
-
-        try {
-            List<Player> players = new ArrayList<>();
-            ApiFuture<QuerySnapshot> query = this.firestore.collection(Constants.COLLECTION_TEAMS)
-                    .whereEqualTo("oidCurrentTeam", oidTeam)
-                    .orderBy("number").get();
-            for (DocumentSnapshot document : query.get().getDocuments()) {
-                Player player = document.toObject(Player.class);
-                players.add(player);
-            }
-            return players;
-        } catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt();
-            throw new ServicesException( "Ocurrio un error al guardar la informacion", e );
-        }
-    }
 
     public List<Player> findPlayersByName(String name) throws ObjectNotFoundException {
         Team team = this.findByName(name);
@@ -200,71 +189,15 @@ public class TeamService {
     }
 
     public List<Championship> findChampionshipsByName(String name) throws ObjectNotFoundException {
-        Team team = this.findByName(name);
-        return new ArrayList<>();
+        throw new UnsupportedOperationException();
     }
 
     public List<List<ChampionshipTeam>> findAllStandingsByName(String name) throws ObjectNotFoundException {
-        Team team = this.findByName(name);
-        return new ArrayList<>();
+        throw new UnsupportedOperationException();
     }
 
     public List<ChampionshipTeam> findStandingsByName(String name) throws ObjectNotFoundException {
-        Team team = this.findByName(name);
-        return new ArrayList<>();
-    }
-
-
-
-    public List<GameTeamDTO> findGames(Team team, GameState state){
-        List<GameTeamDTO> gamesRef = new ArrayList<>();
-        Firestore db= FirestoreOptions.getDefaultInstance().getService();
-        DocumentReference teamRef = db.collection( Constants.COLLECTION_TEAMS ).document( team.getOid() );
-        ApiFuture<QuerySnapshot> queryGames = teamRef.collection( Constants.COLLECTION_GAMES ).whereEqualTo( "state", state ).get();
-
-        try{
-            for (DocumentSnapshot document : queryGames.get().getDocuments()) {
-                    GameTeam gameRef = document.toObject(GameTeam.class);
-                    GameTeamDTO dto = new GameTeamDTO();
-                    dto.setOid( gameRef.getOid() );
-                    dto.setDate( gameRef.getDate());
-                    dto.setType( gameRef.getType() );
-                    dto.setState( gameRef.getState() );
-                    dto.setNameTeam( gameRef.getNameTeam() );
-                    gamesRef.add(dto);
-            }
-        }catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt();
-        }
-        return gamesRef;
-    }
-
-
-    /**
-     *
-     * @param team
-     * @return
-     */
-    public List<GameTeamDTO> findGames(Team team ){
-        List<GameTeamDTO> gamesRef = new ArrayList<>();
-        Firestore db= FirestoreOptions.getDefaultInstance().getService();
-        DocumentReference teamRef = db.collection( Constants.COLLECTION_TEAMS ).document( team.getOid() );
-        CollectionReference games = teamRef.collection( Constants.COLLECTION_GAMES );
-        games.listDocuments().forEach( documentReference -> {
-            try{
-                GameTeam gameRef = documentReference.get().get().toObject(GameTeam.class);
-                GameTeamDTO dto = new GameTeamDTO();
-                dto.setOid( gameRef.getOid() );
-                dto.setDate( gameRef.getDate());
-                dto.setType( gameRef.getType() );
-                dto.setState( gameRef.getState() );
-                dto.setNameTeam( gameRef.getNameTeam() );
-                gamesRef.add(dto);
-            }catch (InterruptedException | ExecutionException e) {
-                Thread.currentThread().interrupt();
-            }
-        } );
-        return gamesRef;
+        throw new UnsupportedOperationException();
     }
 
 
@@ -273,33 +206,48 @@ public class TeamService {
      * @param name
      * @return
      */
-    public List<GameTeamDTO> findGamesByName(String name) throws ObjectNotFoundException {
+    public List<GameTeamDTO> findGamesByName(String name) throws ObjectNotFoundException, ServicesException {
         Team team = this.findByName(name);
-        return findGames(team);
+        return this.gameTeamDAO.findGames(team);
     }
-
 
     /**
      *
      * @param oid
      * @return
      */
-    public List<GameTeamDTO> findGamesById(String oid, String state) throws ObjectNotFoundException {
+    public List<GameTeamDTO> findGamesById(String oid, String state) throws ObjectNotFoundException, ServicesException {
         if(null != state && !state.isEmpty()){
-            return findGames( new Team(oid), GameState.valueOf(state) );
+            return this.gameTeamDAO.findGamesByState( new Team(oid), GameState.valueOf(state) );
         }else{
-            return findGames( new Team(oid) );
+            return this.gameTeamDAO.findGames( new Team(oid) );
         }
     }
 
-    /**
-     *
-     * @param name
-     * @return
-     */
-    public Game findLastGame(String name) {
-        LOGGER.info("Ultimo partido de {}" , name);
-        return new Game();
+    public GameDTO findLastGame(String oidTeam, String oidChampionship) throws ServicesException, ObjectNotFoundException {
+        LOGGER.info("Ultimo partido de {}" , oidTeam);
+        List<GameTeamDTO> games = this.gameTeamDAO.findGamesByState( new Team(oidTeam), GameState.FINALIZED);
+        if( ! games.isEmpty() ){
+            games.sort(Comparator.comparing(GameTeamDTO::getDate).reversed());
+            GameTeamDTO dto = games.get(0);
+            return this.gameService.findById( dto.getGame(), oidChampionship );
+        }
+        else{
+            return null;
+        }
+    }
+
+    public GameDTO findNextGame(String oidTeam, String oidChampionship) throws ServicesException, ObjectNotFoundException {
+        LOGGER.info("Proximo partido de {}" , oidTeam);
+        List<GameTeamDTO> games = this.gameTeamDAO.findGamesByState( new Team(oidTeam), GameState.PENDING);
+        if( ! games.isEmpty() ){
+            games.sort(Comparator.comparing(GameTeamDTO::getDate));
+            GameTeamDTO dto = games.get(0);
+            return this.gameService.findById( dto.getGame(), oidChampionship );
+        }
+        else{
+            return null;
+        }
     }
 
 }

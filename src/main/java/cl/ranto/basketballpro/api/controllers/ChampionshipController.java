@@ -99,6 +99,14 @@ public class ChampionshipController implements IChampionshipController {
         return gameService.getGameStats( oidGame, oid  );
     }
 
+    public List<GameStat> findStatsByGame(String oid, String oidGame , Integer quarter){
+        try {
+            return gameService.getGameStats( oidGame, oid, quarter  );
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public ResponseEntity<GameStat> save(String oid,
                                          String oidGame,
                                          GameStat stat){

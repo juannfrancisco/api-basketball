@@ -2,6 +2,7 @@ package cl.ranto.basketballpro.api.dto;
 
 import cl.ranto.basketballpro.api.core.GameState;
 import cl.ranto.basketballpro.api.core.TypeTeam;
+import com.google.cloud.firestore.DocumentReference;
 
 import java.util.Date;
 
@@ -12,6 +13,9 @@ public class GameTeamDTO {
     private TypeTeam type;
     private String nameTeam;
     private GameState state;
+    private String game;
+    private Integer localScore;
+    private Integer visitorScore;
 
 
     public String getOid() {
@@ -52,5 +56,29 @@ public class GameTeamDTO {
 
     public void setState(GameState state) {
         this.state = state;
+    }
+
+    public String getGame() {
+        return game;
+    }
+
+    public void setGame(String game) {
+        this.game = game;
+    }
+
+    public Integer getLocalScore() {
+        return localScore;
+    }
+
+    public void setLocalScore(Integer localScore) {
+        this.localScore = localScore;
+    }
+
+    public Integer getVisitorScore() {
+        return visitorScore;
+    }
+
+    public void setVisitorScore(Integer visitorScore) {
+        this.visitorScore = visitorScore;
     }
 }

@@ -1,26 +1,18 @@
 package cl.ranto.basketballpro.api.services;
-
-
 import cl.ranto.basketballpro.api.core.*;
 import cl.ranto.basketballpro.api.core.exceptions.ObjectNotFoundException;
 import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
-import cl.ranto.basketballpro.api.core.refereences.GameTeam;
 import cl.ranto.basketballpro.api.dto.CourtDTO;
 import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.repositories.ChampionshipRepository;
 import cl.ranto.basketballpro.api.repositories.CourtRepository;
 import cl.ranto.basketballpro.api.repositories.TeamRepository;
 import cl.ranto.basketballpro.api.services.dao.*;
-import cl.ranto.basketballpro.api.utils.Constants;
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 @Service
 public class GameService {
@@ -57,29 +49,6 @@ public class GameService {
 
     /**
      *
-     * @param oidChampionship
-     * @return
-     */
-    public List<GameDTO> findByChampionship(String oidChampionship , String x) throws ServicesException {
-        try
-        {
-            List<GameDTO> gamesDTO = new ArrayList<>();
-            Firestore db= FirestoreOptions.getDefaultInstance().getService();
-            Query query = db.collection(Constants.COLLECTION_GAMES).whereEqualTo( "championship", oidChampionship );
-            ApiFuture<QuerySnapshot> querySnapshot = query.get();
-            for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-                document.toObject(Game.class);
-            }
-            return gamesDTO;
-        }
-        catch (InterruptedException | ExecutionException ex){
-            Thread.currentThread().interrupt();
-            throw new ServicesException( "Ocurrio un error al obtener la informacion", ex );
-        }
-    }
-
-    /**
-     *
      * @param oid
      * @return
      * @throws ObjectNotFoundException
@@ -96,7 +65,10 @@ public class GameService {
     /**
      *
      * @param oid
+     * @param oidChampionship
      * @return
+     * @throws ObjectNotFoundException
+     * @throws ServicesException
      */
     public GameDTO findById( String oid, String oidChampionship ) throws ObjectNotFoundException, ServicesException {
         Game game = findGameById(oid, oidChampionship);
@@ -110,13 +82,21 @@ public class GameService {
 
 
     /**
-     *
+     * Obtiene las estadisticas del partido de todos los cuartos jugados
      * @param oid
      * @return
      */
     public List<GameStat> getGameStats( String oid , String oidChampionship){
-
         return gameStatsDAO.getGameStats(oid, new Championship(oidChampionship));
+    }
+
+    /**
+     * Obtiene las estadisticas del partido de todos los cuartos jugados
+     * @param oid
+     * @return
+     */
+    public List<GameStat> getGameStats( String oid , String oidChampionship, Integer quarter) throws ServicesException {
+        return gameStatsDAO.getGameStatsByQuarter(oid, new Championship(oidChampionship), quarter);
     }
 
 
@@ -149,7 +129,6 @@ public class GameService {
                 else{
                     scoreboardItem.setVisitorPoints((int) (scoreboardItem.getVisitorPoints() + stat.getValue()));
                 }
-
                 statPlayer.setPTS((int) (statPlayer.getPTS() + stat.getValue()));
                 if( stat.getValue() == 1 ){
                     statPlayer.setPTS1((int) (statPlayer.getPTS1() + stat.getValue()));
@@ -206,10 +185,7 @@ public class GameService {
         for( Map.Entry<Integer,ScoreboardItem> entry : mapScoreboard.entrySet() ){
             this.addScoreboardItem( oid, oidChampionship, entry.getValue() );
         }
-
     }
-
-
 
     public void deleteById( String oid ){
         this.gameDAO.deleteById(oid);
@@ -234,40 +210,25 @@ public class GameService {
         return gameDTO;
     }
 
-    /**
-     *
-     * @param game
-     * @param team
-     * @return
-     * @throws ServicesException
-     */
-    public GameTeam findGameRef(Game game , Team team) throws ServicesException {
-
-        try {
-            Firestore db= FirestoreOptions.getDefaultInstance().getService();
-            DocumentReference teamRef = db.collection( Constants.COLLECTION_TEAMS ).document( team.getOid() );
-            DocumentReference gameRef = db.collection( Constants.COLLECTION_GAMES ).document( game.getOid() );
-
-            CollectionReference gamesRef = teamRef.collection( Constants.COLLECTION_GAMES );
-            Query query = gamesRef.whereArrayContains("game", gameRef);
-
-            ApiFuture<QuerySnapshot> querySnapshot = query.get();
-            for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
-                return document.toObject(GameTeam.class);
-            }
-            return null;
-        } catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt();
-            throw new ServicesException( "Ocurrio un error al guardar la informacion", e );
-        }
-    }
 
     public GameDTO update(GameDTO game){
         return game;
     }
 
-    public void updateState(Game game, String oidChampionship) throws ServicesException {
+    /**
+     * Actualiza el estado del partido a finalizado y agrega el marcador local y visitante.
+     * Actualiza tambien las referencias en las colecciones de los dos equipos.
+     * @param game
+     * @param oidChampionship
+     * @throws ServicesException
+     * @throws ObjectNotFoundException
+     */
+    public void updateState(Game game, String oidChampionship) throws ServicesException, ObjectNotFoundException {
+        Game gameFind = this.findGameById(game.getOid(), oidChampionship);
         gameDAO.updateState(game, new Championship(oidChampionship));
+        gameFind.setLocalScore( game.getLocalScore() );
+        gameFind.setVisitorScore( game.getVisitorScore() );
+        gameTeamDAO.update(gameFind);
     }
 
     public GameStat addStat(String oidGame, String oidChampionship, GameStat stat) throws ServicesException {

@@ -47,6 +47,12 @@ public interface IChampionshipController {
             @PathVariable("oid") String oid,
             @PathVariable("oidGame") String oidGame );
 
+    @GetMapping("/{oid}/games/{oidGame}/stats/{quarter}")
+    List<GameStat> findStatsByGame(
+            @PathVariable("oid") String oid,
+            @PathVariable("oidGame") String oidGame ,
+            @PathVariable("quarter") Integer quarter);
+
     @PutMapping("/{oid}/games/{oidGame}/stats")
     ResponseEntity<GameStat> save(
             @PathVariable("oid") String oid,

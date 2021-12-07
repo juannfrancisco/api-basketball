@@ -1,7 +1,9 @@
 package cl.ranto.basketballpro.api.controllers;
 
+import cl.ranto.basketballpro.api.controllers.interfaces.ITeamController;
 import cl.ranto.basketballpro.api.core.*;
 import cl.ranto.basketballpro.api.core.exceptions.ObjectNotFoundException;
+import cl.ranto.basketballpro.api.dto.GameDTO;
 import cl.ranto.basketballpro.api.dto.GameTeamDTO;
 import cl.ranto.basketballpro.api.services.TeamService;
 import org.slf4j.Logger;
@@ -15,21 +17,18 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/teams")
-public class TeamController {
+public class TeamController implements ITeamController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TeamController.class);
 
     @Autowired
     private TeamService service;
 
-    @RequestMapping(method = RequestMethod.GET)
     public Flux<Team> listAll(){
         return service.listAll();
     }
 
-    @GetMapping("/{oid}")
-    public ResponseEntity<Team> findById( @PathVariable("oid") String oid ){
-
+    public ResponseEntity<Team> findById( String oid ){
         try {
             return new ResponseEntity<>(
                     service.findByIdPlayers(oid),
@@ -45,27 +44,53 @@ public class TeamController {
         }
     }
 
-    @GetMapping("/{oid}/last-game")
-    @CrossOrigin("*")
-    public Game findLastGame(@PathVariable("name") String name ){
-        return service.findLastGame(name);
+    /**
+     * Obtiene el ultimo partido jugado del equipo enviado como parametro.
+     * @param oidTeam
+     * @param oidChampionship
+     * @return
+     */
+    public ResponseEntity<GameDTO> findLastGame(String oidTeam, String oidChampionship ){
+        try {
+            return new ResponseEntity<>(
+                    service.findLastGame(oidTeam, oidChampionship),
+                    HttpStatus.OK);
+        }
+        catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @RequestMapping(method = RequestMethod.GET, value="/n/{name}/last-match")
-    @CrossOrigin("*")
-    public Game findLastGameByName(@PathVariable("name") String name ){
-        return service.findLastGame(name);
+    /**
+     * Obtiene el proximo partido a disputar por el equipo.
+     * @param oidTeam
+     * @param oidChampionship
+     * @return
+     */
+    public ResponseEntity<GameDTO> findNextGame(String oidTeam, String oidChampionship ){
+        try {
+            return new ResponseEntity<>(
+                    service.findNextGame(oidTeam, oidChampionship),
+                    HttpStatus.OK);
+        }
+        catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    public Game findLastGameByName(String name ){
+        throw new UnsupportedOperationException();
+    }
 
-    @RequestMapping(method = RequestMethod.DELETE, value="/{oid}")
-    public void deteleById( @PathVariable("oid") String oid ){
+    public void deteleById( String oid ){
         service.deleteById(oid);
     }
 
-    @PutMapping
-    public ResponseEntity<Team> save(@RequestBody Team team){
-
+    public ResponseEntity<Team> save( Team team){
         try {
             return new ResponseEntity<>(
                     service.save(team),
@@ -78,8 +103,8 @@ public class TeamController {
         }
     }
 
-    @PostMapping
-    public ResponseEntity<Team> update(@RequestBody Team team){
+
+    public ResponseEntity<Team> update( Team team){
         try {
             return new ResponseEntity<>(
                     service.update(team),
@@ -92,20 +117,16 @@ public class TeamController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.PUT,value="/{oid}/players" )
-    public void addPlayerTeam(@PathVariable("oid") String oid, @RequestBody Player player){
+    public void addPlayerTeam( String oid, Player player){
         player.setOidCurrentTeam(oid);
         service.addPlayer(player);
     }
 
-    @GetMapping("/{oid}/players")
-    public Flux<Player> findAllPlayers(@PathVariable("oid") String oid){
+    public Flux<Player> findAllPlayers(String oid){
         return service.findAllPlayers(oid);
     }
 
-    @GetMapping("/n/{name}")
-    @CrossOrigin("*")
-    public ResponseEntity<Team> findByNameURL( @PathVariable("name") String name ){
+    public ResponseEntity<Team> findByNameURL( String name ){
         try {
             return new ResponseEntity<>(
                     service.findByNameURL(name),
@@ -119,10 +140,7 @@ public class TeamController {
         }
     }
 
-
-    @GetMapping("/n/{name}/players")
-    @CrossOrigin("*")
-    public ResponseEntity<List<Player>>  findPlayersByNameURL(@PathVariable("name") String name ){
+    public ResponseEntity<List<Player>>  findPlayersByNameURL(String name ){
         try {
             return new ResponseEntity<>(
                     service.findPlayersByName(name),
@@ -136,9 +154,7 @@ public class TeamController {
         }
     }
 
-    @GetMapping("/n/{name}/championships")
-    @CrossOrigin("*")
-    public  ResponseEntity<List<Championship>> findChampionshipsByNameURL(@PathVariable("name") String name ){
+    public  ResponseEntity<List<Championship>> findChampionshipsByNameURL(String name ){
         try {
             return new ResponseEntity<>(
                     service.findChampionshipsByName(name),
@@ -153,9 +169,7 @@ public class TeamController {
         }
     }
 
-    @GetMapping("/n/{name}/standingsL")
-    @CrossOrigin("*")
-    public  ResponseEntity<List<List<ChampionshipTeam>>> findAllStandingsByNameURL(@PathVariable("name") String name ){
+    public  ResponseEntity<List<List<ChampionshipTeam>>> findAllStandingsByNameURL(String name ){
         try {
             return new ResponseEntity<>(
                     service.findAllStandingsByName(name),
@@ -172,9 +186,7 @@ public class TeamController {
 
     }
 
-    @GetMapping("/n/{name}/standings")
-    @CrossOrigin("*")
-    public ResponseEntity<List<ChampionshipTeam>> findStandingsByNameURL(@PathVariable("name") String name ){
+    public ResponseEntity<List<ChampionshipTeam>> findStandingsByNameURL(String name ){
         try {
             return new ResponseEntity<>(
                     service.findStandingsByName(name),
@@ -189,9 +201,7 @@ public class TeamController {
         }
     }
 
-    @GetMapping("/n/{name}/games")
-    @CrossOrigin("*")
-    public ResponseEntity<List<GameTeamDTO>> findGamesByNameURL(@PathVariable("name") String name ){
+    public ResponseEntity<List<GameTeamDTO>> findGamesByNameURL(String name ){
 
         try {
             return new ResponseEntity<>(
@@ -207,12 +217,9 @@ public class TeamController {
         }
     }
 
-
-    @GetMapping("/{oid}/games")
-    @CrossOrigin("*")
     public ResponseEntity<List<GameTeamDTO>> findGamesByID(
-            @PathVariable("oid") String oid,
-            @RequestParam(required = false) String state
+            String oid,
+            String state
     ){
         try {
             return new ResponseEntity<>(

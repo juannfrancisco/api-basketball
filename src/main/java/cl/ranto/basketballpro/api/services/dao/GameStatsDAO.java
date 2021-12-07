@@ -3,11 +3,11 @@ package cl.ranto.basketballpro.api.services.dao;
 import cl.ranto.basketballpro.api.core.Championship;
 import cl.ranto.basketballpro.api.core.GameStat;
 import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
+import cl.ranto.basketballpro.api.core.refereences.GameTeam;
+import cl.ranto.basketballpro.api.dto.GameTeamDTO;
 import cl.ranto.basketballpro.api.utils.Constants;
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,5 +50,22 @@ public class GameStatsDAO {
             }
         } );
         return stats;
+    }
+
+    public List<GameStat> getGameStatsByQuarter(String oidGame, Championship championship, Integer quarter) throws ServicesException {
+
+        try{
+            List<GameStat> stats = new ArrayList<>();
+            DocumentReference championshipRef = this.firestore.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document( championship.getOid() );
+            DocumentReference gameRef = championshipRef.collection( Constants.COLLECTION_GAMES ).document( oidGame );
+            ApiFuture<QuerySnapshot> query = gameRef.collection( Constants.COLLECTION_STATS).whereEqualTo("quarter",quarter).get();
+            for (DocumentSnapshot document : query.get().getDocuments()) {
+                stats.add( document.toObject(GameStat.class) );
+            }
+            return stats;
+        }catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new ServicesException("", e);
+        }
     }
 }

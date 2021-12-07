@@ -16,6 +16,8 @@ public class GameTeam {
     private TypeTeam type;
     private String nameTeam;
     private GameState state;
+    private Integer localScore;
+    private Integer visitorScore;
 
 
     public GameTeam() {
@@ -76,5 +78,21 @@ public class GameTeam {
 
     public void setState(GameState state) {
         this.state = state;
+    }
+
+    public Integer getLocalScore() {
+        return localScore;
+    }
+
+    public void setLocalScore(Integer localScore) {
+        this.localScore = localScore;
+    }
+
+    public Integer getVisitorScore() {
+        return visitorScore;
+    }
+
+    public void setVisitorScore(Integer visitorScore) {
+        this.visitorScore = visitorScore;
     }
 }
