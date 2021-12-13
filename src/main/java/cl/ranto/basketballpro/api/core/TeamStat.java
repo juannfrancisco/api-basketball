@@ -2,11 +2,10 @@ package cl.ranto.basketballpro.api.core;
 
 import com.google.cloud.firestore.annotation.DocumentId;
 
-public class GameStatPlayer {
+public class TeamStat {
 
     @DocumentId
     private String oid;
-    private String oidPlayer;
     private String oidTeam;
     private Integer PTS;
     private Integer PTS1;
@@ -19,74 +18,35 @@ public class GameStatPlayer {
     private Integer OR;
     private Integer AST;
     private Integer MAS;
-    private Integer REB;
     private Integer DR;
     private Integer STL;
     private Integer BLK;
     private Integer PF;
+    private HiStatPlayer oidPlayerHIPoints;
+    private HiStatPlayer oidPlayerHIRebounds;
+    private HiStatPlayer oidPlayerHIAssists;
 
 
-    public GameStatPlayer() {
-        this.setPTS(0);
-        this.setPTS1(0);
-        this.setPTS2(0);
-        this.setPTS3(0);
-        this.setMPT(0);
-        this.setMPT1(0);
-        this.setMPT2(0);
-        this.setMPT3(0);
-        this.setAST(0);
-        this.setMAS(0);
-        this.setOR(0);
-        this.setDR(0);
-        this.setSTL(0);
-        this.setBLK(0);
-        this.setPF(0);
-        this.setREB(0);
+    public TeamStat() {
+        this.PTS=0;
+        this.PTS1=0;
+        this.PTS2=0;
+        this.PTS3=0;
+        this.MPT=0;
+        this.MPT1=0;
+        this.MPT2=0;
+        this.MPT3=0;
+        this.OR=0;
+        this.AST=0;
+        this.MAS=0;
+        this.DR=0;
+        this.STL=0;
+        this.BLK=0;
+        this.PF=0;
     }
 
-
-    public GameStatPlayer(String oid, String oidPlayer, String oidTeam, Integer PTS, Integer PTS1, Integer PTS2, Integer PTS3, Integer MPT, Integer MPT1, Integer MPT2, Integer MPT3, Integer OR, Integer AST, Integer MAS, Integer DR, Integer STL, Integer BLK, Integer PF) {
-        this.oid = oid;
-        this.oidPlayer = oidPlayer;
+    public TeamStat(String oidTeam) {
         this.oidTeam = oidTeam;
-        this.PTS = PTS;
-        this.PTS1 = PTS1;
-        this.PTS2 = PTS2;
-        this.PTS3 = PTS3;
-        this.MPT = MPT;
-        this.MPT1 = MPT1;
-        this.MPT2 = MPT2;
-        this.MPT3 = MPT3;
-        this.OR = OR;
-        this.AST = AST;
-        this.MAS = MAS;
-        this.DR = DR;
-        this.STL = STL;
-        this.BLK = BLK;
-        this.PF = PF;
-    }
-
-    public GameStatPlayer(String oid, String oidPlayer, String oidTeam ){
-        this.setOid(oid);
-        this.setOidPlayer(oidPlayer);
-        this.setOidTeam(oidTeam);
-        this.setPTS(0);
-        this.setPTS1(0);
-        this.setPTS2(0);
-        this.setPTS3(0);
-        this.setMPT(0);
-        this.setMPT1(0);
-        this.setMPT2(0);
-        this.setMPT3(0);
-        this.setAST(0);
-        this.setMAS(0);
-        this.setBLK(0);
-        this.setOR(0);
-        this.setDR(0);
-        this.setSTL(0);
-        this.setPF(0);
-        this.setREB(0);
     }
 
     public String getOid() {
@@ -97,21 +57,12 @@ public class GameStatPlayer {
         this.oid = oid;
     }
 
-    public String getOidPlayer() {
-        return oidPlayer;
-    }
-
-
     public String getOidTeam() {
         return oidTeam;
     }
 
     public void setOidTeam(String oidTeam) {
         this.oidTeam = oidTeam;
-    }
-
-    public void setOidPlayer(String oidPlayer) {
-        this.oidPlayer = oidPlayer;
     }
 
     public Integer getPTS() {
@@ -234,12 +185,27 @@ public class GameStatPlayer {
         this.PF = PF;
     }
 
-
-    public Integer getREB() {
-        return REB;
+    public HiStatPlayer getOidPlayerHIPoints() {
+        return oidPlayerHIPoints;
     }
 
-    public void setREB(Integer REB) {
-        this.REB = REB;
+    public void setOidPlayerHIPoints(HiStatPlayer oidPlayerHIPoints) {
+        this.oidPlayerHIPoints = oidPlayerHIPoints;
+    }
+
+    public HiStatPlayer getOidPlayerHIRebounds() {
+        return oidPlayerHIRebounds;
+    }
+
+    public void setOidPlayerHIRebounds(HiStatPlayer oidPlayerHIRebounds) {
+        this.oidPlayerHIRebounds = oidPlayerHIRebounds;
+    }
+
+    public HiStatPlayer getOidPlayerHIAssists() {
+        return oidPlayerHIAssists;
+    }
+
+    public void setOidPlayerHIAssists(HiStatPlayer oidPlayerHIAssists) {
+        this.oidPlayerHIAssists = oidPlayerHIAssists;
     }
 }

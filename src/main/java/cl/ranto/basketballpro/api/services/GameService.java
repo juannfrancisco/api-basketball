@@ -46,6 +46,9 @@ public class GameService {
     @Autowired
     private GameStatsPlayerDAO gameStatsPlayerDAO;
 
+    @Autowired
+    private TeamStatsDAO teamStatsDAO;
+
 
     /**
      *
@@ -100,91 +103,123 @@ public class GameService {
     }
 
 
-    /**
-     *
-     * @param oid
-     * @return
-     */
-    public void calculateStats( String oid , String oidChampionship) throws ServicesException {
-
-        List<GameStat> stats = this.getGameStats(oid, oidChampionship);
-        Map<String,GameStatPlayer> map = new HashMap<>();
+    public Map<Integer,ScoreboardItem> calculateScoreboard(List<GameStat> stats){
         Map<Integer,ScoreboardItem> mapScoreboard = new HashMap<>();
-
         stats.forEach( (stat) -> {
-            if(!map.containsKey( stat.getOidPlayer() ) ){
-                map.put( stat.getOidPlayer(), new GameStatPlayer( "", stat.getOidPlayer(), stat.getTeamOid(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ) );
-            }
             if(!mapScoreboard.containsKey( stat.getQuarter() ) ){
                 mapScoreboard.put( stat.getQuarter(), new ScoreboardItem( 0, 0, stat.getQuarter().toString() ) );
             }
-
-            GameStatPlayer statPlayer = map.get(stat.getOidPlayer());
             ScoreboardItem scoreboardItem = mapScoreboard.get( stat.getQuarter() );
-            if( stat.getType().equals( TypeStat.PTS ) ){
-
+            if (  stat.getType().equals( TypeStat.PTS )){
                 if(stat.getTypeTeam().equals(TypeTeam.LOCAL)){
                     scoreboardItem.setLocalPoints((int) (scoreboardItem.getLocalPoints() + stat.getValue()));
                 }
                 else{
                     scoreboardItem.setVisitorPoints((int) (scoreboardItem.getVisitorPoints() + stat.getValue()));
                 }
-                statPlayer.setPTS((int) (statPlayer.getPTS() + stat.getValue()));
-                if( stat.getValue() == 1 ){
-                    statPlayer.setPTS1((int) (statPlayer.getPTS1() + stat.getValue()));
-                }else if(stat.getValue() == 2) {
-                    statPlayer.setPTS2((int) (statPlayer.getPTS2() + stat.getValue()));
-                }else if( stat.getValue() == 3 ){
-                    statPlayer.setPTS3((int) (statPlayer.getPTS3() + stat.getValue()));
-                }
-            }
-            if( stat.getType().equals( TypeStat.MPT ) ){
-                statPlayer.setMPT((int) (statPlayer.getMPT() + stat.getValue()));
-                if( stat.getValue() == 1 ){
-                    statPlayer.setMPT1((int) (statPlayer.getMPT1() + stat.getValue()));
-                }else if(stat.getValue() == 2) {
-                    statPlayer.setMPT2((int) (statPlayer.getMPT2() + stat.getValue()));
-                }else if( stat.getValue() == 3 ){
-                    statPlayer.setMPT3((int) (statPlayer.getMPT3() + stat.getValue()));
-                }
-            }
-            if( stat.getType().equals( TypeStat.PF ) ){
-                statPlayer.setPF((int) (statPlayer.getPF() + stat.getValue()));
-            }
-            if( stat.getType().equals( TypeStat.AST ) ){
-                statPlayer.setAST((int) (statPlayer.getAST() + stat.getValue()));
-            }
-            if( stat.getType().equals( TypeStat.MAS ) ){
-                statPlayer.setMAS((int) (statPlayer.getMAS() + stat.getValue()));
-            }
-            if( stat.getType().equals( TypeStat.OR ) ){
-                statPlayer.setOR((int) (statPlayer.getOR() + stat.getValue()));
-            }
-            if( stat.getType().equals( TypeStat.DR ) ){
-                statPlayer.setDR((int) (statPlayer.getDR() + stat.getValue()));
-            }
-            if( stat.getType().equals( TypeStat.STL ) ){
-                statPlayer.setSTL((int) (statPlayer.getSTL() + stat.getValue()));
-            }
-            if( stat.getType().equals( TypeStat.BLK ) ){
-                statPlayer.setBLK((int) (statPlayer.getBLK() + stat.getValue()));
             }
         });
+        return mapScoreboard;
+    }
 
+    public List<TeamStat> calculateTeamStats(List<GameStat> stats){
+        List<TeamStat> teamStats = new ArrayList<>();
+        TeamStat local = new TeamStat();
+        TeamStat visitor = new TeamStat();
+        stats.forEach( (stat) -> {
+            if(stat.getTypeTeam().equals(TypeTeam.LOCAL)){
+                stat.getType().addTeamStat( local, (int) stat.getValue() );
+                local.setOidTeam( stat.getTeamOid() );
+            }else{
+                stat.getType().addTeamStat( visitor, (int) stat.getValue() );
+                visitor.setOidTeam( stat.getTeamOid() );
+            }
+        });
+        teamStats.add(local);
+        teamStats.add(visitor);
+        return teamStats;
+    }
+
+    public Map<String,GameStatPlayer> calculateGameStatsPlayer(List<GameStat> stats){
+        Map<String,GameStatPlayer> map = new HashMap<>();
+        stats.forEach( (stat) -> {
+            if(!map.containsKey( stat.getOidPlayer() ) ){
+                map.put( stat.getOidPlayer(), new GameStatPlayer( stat.getOidPlayer(), stat.getOidPlayer(), stat.getTeamOid() ) );
+            }
+            GameStatPlayer statPlayer = map.get(stat.getOidPlayer());
+            stat.getType().addGameStatPlayer( statPlayer, (int) stat.getValue() );
+        });
+        return map;
+    }
+
+
+    /**
+     *
+     * @param oid
+     * @return
+     */
+    public void calculateStats( String oid , String oidChampionship) throws ServicesException {
+        List<GameStat> stats = this.getGameStats(oid, oidChampionship);
+        List<GameStatPlayer> gameStatPlayers = new ArrayList<>();
+        Map<String,GameStatPlayer> map = this.calculateGameStatsPlayer(stats);
         for (Map.Entry<String,GameStatPlayer> entry : map.entrySet()){
             this.addStatPlayer(oid, oidChampionship, entry.getValue());
-            LOGGER.info( "Stats player {} PTS:{} PF:{} OR:{} DR:{} STL:{} BLK:{}", entry.getValue().getOidPlayer(),
-                    entry.getValue().getPTS(),
-                    entry.getValue().getPF(),
-                    entry.getValue().getOR(),
-                    entry.getValue().getDR(),
-                    entry.getValue().getSTL(),
-                    entry.getValue().getBLK());
+            gameStatPlayers.add(entry.getValue());
         }
 
+        Map<Integer,ScoreboardItem> mapScoreboard = this.calculateScoreboard(stats);
         for( Map.Entry<Integer,ScoreboardItem> entry : mapScoreboard.entrySet() ){
             this.addScoreboardItem( oid, oidChampionship, entry.getValue() );
         }
+
+        List<TeamStat> teamStats = this.calculateTeamStats(stats);
+        for( TeamStat stat: teamStats ){
+            stat.setOidPlayerHIPoints( this.findMaxPoints(gameStatPlayers, stat.getOidTeam()) );
+            stat.setOidPlayerHIRebounds( this.findMaxRebounds(gameStatPlayers, stat.getOidTeam()) );
+            stat.setOidPlayerHIAssists( this.findMaxAssist(gameStatPlayers, stat.getOidTeam()) );
+           this.addTeamStat(oid, oidChampionship, stat );
+        }
+    }
+
+    public HiStatPlayer findMaxPoints( List<GameStatPlayer> gameStatPlayers, String oidTeam){
+        GameStatPlayer statPlayer = gameStatPlayers.stream()
+                .filter( gameStatPlayer ->  gameStatPlayer.getOidTeam().equals( oidTeam ) )
+                .max(Comparator.comparing(GameStatPlayer::getPTS))
+                .get();
+        HiStatPlayer hiStatPlayer = null;
+        if(statPlayer.getPTS() != 0){
+            hiStatPlayer = new HiStatPlayer(statPlayer.getOidPlayer(), TypeStat.PTS, statPlayer.getPTS() );
+        }
+        return hiStatPlayer;
+
+    }
+
+    public HiStatPlayer findMaxAssist( List<GameStatPlayer> gameStatPlayers, String oidTeam){
+        GameStatPlayer statPlayer = gameStatPlayers.stream()
+                .filter( gameStatPlayer ->  gameStatPlayer.getOidTeam().equals( oidTeam ) )
+                .max(Comparator.comparing(GameStatPlayer::getAST))
+                .get();
+        HiStatPlayer hiStatPlayer = null;
+        if(statPlayer.getAST() != 0){
+            hiStatPlayer = new HiStatPlayer(statPlayer.getOidPlayer(), TypeStat.AST, statPlayer.getAST() );
+        }
+        return hiStatPlayer;
+    }
+
+    public HiStatPlayer findMaxRebounds( List<GameStatPlayer> gameStatPlayers, String oidTeam){
+        GameStatPlayer statPlayer = gameStatPlayers.stream()
+                .filter( gameStatPlayer ->  gameStatPlayer.getOidTeam().equals( oidTeam ) )
+                .map(  gameStatPlayer -> {
+                    gameStatPlayer.setREB( gameStatPlayer.getOR() + gameStatPlayer.getDR() );
+                    return gameStatPlayer;
+                })
+                .max(Comparator.comparing(GameStatPlayer::getREB))
+                .get();
+        HiStatPlayer hiStatPlayer = null;
+        if(statPlayer.getOR() + statPlayer.getDR() != 0){
+            hiStatPlayer = new HiStatPlayer(statPlayer.getOidPlayer(), TypeStat.REB, statPlayer.getOR() + statPlayer.getDR() );
+        }
+        return hiStatPlayer;
     }
 
     public void deleteById( String oid ){
@@ -232,6 +267,7 @@ public class GameService {
     }
 
     public GameStat addStat(String oidGame, String oidChampionship, GameStat stat) throws ServicesException {
+        stat.setDate(new Date());
         return gameStatsDAO.save(oidGame, new Championship(oidChampionship), stat);
     }
 
@@ -249,5 +285,14 @@ public class GameService {
 
     public ScoreboardItem addScoreboardItem(String oidGame, String oidChampionship, ScoreboardItem scoreboardItem) throws ServicesException {
         return this.scoreboardDAO.addScoreboardItem(oidGame, new Championship(oidChampionship), scoreboardItem);
+    }
+
+
+    public TeamStat addTeamStat(String oidGame, String oidChampionship, TeamStat teamStat) throws ServicesException {
+        return this.teamStatsDAO.addTeamStat(oidGame, new Championship(oidChampionship), teamStat);
+    }
+
+    public List<TeamStat> getTeamStats(String oidGame, String oidChampionship ) throws ServicesException {
+        return this.teamStatsDAO.getTeamStats(oidGame, new Championship(oidChampionship));
     }
 }

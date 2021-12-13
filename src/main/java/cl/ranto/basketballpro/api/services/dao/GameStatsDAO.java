@@ -3,8 +3,6 @@ package cl.ranto.basketballpro.api.services.dao;
 import cl.ranto.basketballpro.api.core.Championship;
 import cl.ranto.basketballpro.api.core.GameStat;
 import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
-import cl.ranto.basketballpro.api.core.refereences.GameTeam;
-import cl.ranto.basketballpro.api.dto.GameTeamDTO;
 import cl.ranto.basketballpro.api.utils.Constants;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;

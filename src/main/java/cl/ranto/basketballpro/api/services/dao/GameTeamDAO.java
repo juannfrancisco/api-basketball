@@ -49,8 +49,8 @@ public class GameTeamDAO {
 
     public void addGameRef( Game game , Team local, Team visitor) throws ServicesException {
         DocumentReference gameRef = this.firestore.collection(Constants.COLLECTION_GAMES).document(game.getOid());
-        GameTeam gameLocal = new GameTeam(game.getOid(), gameRef, game.getDate(), TypeTeam.LOCAL, visitor.getName(), GameState.PENDING);
-        GameTeam gameVisitor = new GameTeam(game.getOid(), gameRef, game.getDate(), TypeTeam.VISITOR, local.getName(), GameState.PENDING);
+        GameTeam gameLocal = new GameTeam(game.getOid(), gameRef, game.getDate(), TypeTeam.LOCAL, visitor.getOid(), visitor.getName(), GameState.PENDING);
+        GameTeam gameVisitor = new GameTeam(game.getOid(), gameRef, game.getDate(), TypeTeam.VISITOR, local.getOid(), local.getName(), GameState.PENDING);
         this.addGameTeam(local, gameLocal);
         this.addGameTeam(visitor, gameVisitor);
     }

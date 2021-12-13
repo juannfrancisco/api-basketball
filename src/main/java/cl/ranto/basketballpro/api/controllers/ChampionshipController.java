@@ -214,4 +214,18 @@ public class ChampionshipController implements IChampionshipController {
         }
     }
 
+
+    public ResponseEntity<List<TeamStat>> findTeamStats(String oidChampionship, String oidGame ){
+        try{
+            return new ResponseEntity<>(
+                    gameService.getTeamStats(oidGame, oidChampionship),
+                    HttpStatus.OK);
+
+        }catch (Exception ex){
+            LOGGER.error(ex.getMessage(), ex);
+            return new ResponseEntity<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

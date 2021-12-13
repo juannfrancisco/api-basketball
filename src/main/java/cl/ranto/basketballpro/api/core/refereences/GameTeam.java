@@ -14,6 +14,7 @@ public class GameTeam {
     private DocumentReference game;
     private Date date;
     private TypeTeam type;
+    private String oidTeam;
     private String nameTeam;
     private GameState state;
     private Integer localScore;
@@ -23,13 +24,14 @@ public class GameTeam {
     public GameTeam() {
     }
 
-    public GameTeam(String oid, DocumentReference game, Date date, TypeTeam type, String nameTeam, GameState state) {
+    public GameTeam(String oid, DocumentReference game, Date date, TypeTeam type, String oidTeam, String nameTeam, GameState state) {
         this.oid = oid;
         this.game = game;
         this.date = date;
         this.type = type;
         this.nameTeam = nameTeam;
         this.state = state;
+        this.oidTeam = oidTeam;
     }
 
     public String getOid() {
@@ -94,5 +96,13 @@ public class GameTeam {
 
     public void setVisitorScore(Integer visitorScore) {
         this.visitorScore = visitorScore;
+    }
+
+    public String getOidTeam() {
+        return oidTeam;
+    }
+
+    public void setOidTeam(String oidTeam) {
+        this.oidTeam = oidTeam;
     }
 }

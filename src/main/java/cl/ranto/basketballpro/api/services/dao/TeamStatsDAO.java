@@ -1,7 +1,7 @@
 package cl.ranto.basketballpro.api.services.dao;
 
 import cl.ranto.basketballpro.api.core.Championship;
-import cl.ranto.basketballpro.api.core.GameStatPlayer;
+import cl.ranto.basketballpro.api.core.TeamStat;
 import cl.ranto.basketballpro.api.core.exceptions.ServicesException;
 import cl.ranto.basketballpro.api.utils.Constants;
 import com.google.api.core.ApiFuture;
@@ -18,20 +18,19 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class GameStatsPlayerDAO {
+public class TeamStatsDAO {
 
     @Autowired
     private Firestore firestore;
 
-    private static final String COLLECTION_STATS_PLAYER = "statsPlayer";
+    private static final String COLLECTION_STATS_TEAM = "statsTeam";
 
-
-    public GameStatPlayer addStatPlayer(String oidGame, Championship championship, GameStatPlayer stat) throws ServicesException {
+    public TeamStat addTeamStat(String oidGame, Championship championship, TeamStat stat) throws ServicesException {
         try {
             DocumentReference championshipRef = this.firestore.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document( championship.getOid() );
             DocumentReference gameRef = championshipRef.collection( Constants.COLLECTION_GAMES ).document( oidGame );
             stat.setOid(UUID.randomUUID().toString());
-            ApiFuture<WriteResult> result = gameRef.collection( COLLECTION_STATS_PLAYER ).document(stat.getOidPlayer()).set(stat);
+            ApiFuture<WriteResult> result = gameRef.collection( COLLECTION_STATS_TEAM ).document(stat.getOidTeam()).set(stat);
             result.get().getUpdateTime();
             return stat;
         } catch (InterruptedException | ExecutionException e) {
@@ -41,15 +40,15 @@ public class GameStatsPlayerDAO {
     }
 
 
-    public List<GameStatPlayer> getGameStatsPlayer(String oidGame, Championship championship ){
-        List<GameStatPlayer> stats = new ArrayList<>();
+    public List<TeamStat> getTeamStats(String oidGame, Championship championship ){
+        List<TeamStat> stats = new ArrayList<>();
         DocumentReference championshipRef = this.firestore.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document( championship.getOid() );
         DocumentReference gameRef = championshipRef.collection( Constants.COLLECTION_GAMES ).document( oidGame );
-        CollectionReference gameStats = gameRef.collection( COLLECTION_STATS_PLAYER );
+        CollectionReference gameStats = gameRef.collection( COLLECTION_STATS_TEAM );
         gameStats.listDocuments().forEach( documentReference -> {
             try{
-                GameStatPlayer gameStat = documentReference.get().get().toObject(GameStatPlayer.class);
-                stats.add(gameStat);
+                TeamStat teamStat = documentReference.get().get().toObject(TeamStat.class);
+                stats.add(teamStat);
             }catch (InterruptedException | ExecutionException e) {
                 Thread.currentThread().interrupt();
             }

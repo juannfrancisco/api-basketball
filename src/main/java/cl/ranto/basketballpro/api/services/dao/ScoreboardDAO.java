@@ -8,6 +8,7 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,8 @@ public class ScoreboardDAO {
     @Autowired
     private Firestore firestore;
 
+    private static final String COLLECTION_SCOREBOARD = "scoreboard";
+
 
     /**
      *
@@ -32,7 +35,7 @@ public class ScoreboardDAO {
 
         DocumentReference championshipRef = this.firestore.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document( championship.getOid() );
         DocumentReference gameRef = championshipRef.collection( Constants.COLLECTION_GAMES ).document( oidGame );
-        CollectionReference scoreboard = gameRef.collection( "scoreboard" );
+        CollectionReference scoreboard = gameRef.collection( COLLECTION_SCOREBOARD );
         List<ScoreboardItem> scoreboardItems = new ArrayList<>();
         scoreboard.listDocuments().forEach( documentReference -> {
             try{
@@ -58,8 +61,8 @@ public class ScoreboardDAO {
         try {
             DocumentReference championshipRef = this.firestore.collection( Constants.COLLECTION_CHAMPIONSHIPS ).document( championship.getOid() );
             DocumentReference gameRef = championshipRef.collection( Constants.COLLECTION_GAMES ).document( oidGame );
-            ApiFuture<DocumentReference> ref = gameRef.collection( "scoreboard" ).add(scoreboardItem);
-            scoreboardItem.setOid( ref.get().getId() );
+            ApiFuture<WriteResult> result  = gameRef.collection( COLLECTION_SCOREBOARD ).document(scoreboardItem.getQuarter()).set(scoreboardItem);
+            result.get().getUpdateTime();
             return scoreboardItem;
         } catch (InterruptedException | ExecutionException e) {
             Thread.currentThread().interrupt();

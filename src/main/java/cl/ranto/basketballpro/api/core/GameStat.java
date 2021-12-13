@@ -2,6 +2,8 @@ package cl.ranto.basketballpro.api.core;
 
 import com.google.cloud.firestore.annotation.DocumentId;
 
+import java.util.Date;
+
 public class GameStat{
 
     @DocumentId
@@ -13,6 +15,7 @@ public class GameStat{
     private double value;
     private TypeTeam typeTeam;
     private String teamOid;
+    private Date date;
 
     public String getOid() {
         return oid;
@@ -76,5 +79,13 @@ public class GameStat{
 
     public void setQuarterTimeText(String quarterTimeText) {
         this.quarterTimeText = quarterTimeText;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

@@ -96,4 +96,10 @@ public interface IChampionshipController {
     ResponseEntity<Object> calculateStats(
             @PathVariable("oid") String oid,
             @PathVariable("oidGame") String oidGame );
+
+
+    @GetMapping("/{oid}/games/{oidGame}/stats-team")
+    ResponseEntity<List<TeamStat>> findTeamStats(
+            @PathVariable("oid") String oidChampionship,
+            @PathVariable("oidGame") String oidGame );
 }
