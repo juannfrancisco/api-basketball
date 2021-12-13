@@ -22,6 +22,7 @@ public class TeamStat {
     private Integer STL;
     private Integer BLK;
     private Integer PF;
+    private Integer REB;
     private HiStatPlayer oidPlayerHIPoints;
     private HiStatPlayer oidPlayerHIRebounds;
     private HiStatPlayer oidPlayerHIAssists;
@@ -43,6 +44,7 @@ public class TeamStat {
         this.STL=0;
         this.BLK=0;
         this.PF=0;
+        this.REB=0;
     }
 
     public TeamStat(String oidTeam) {
@@ -207,5 +209,13 @@ public class TeamStat {
 
     public void setOidPlayerHIAssists(HiStatPlayer oidPlayerHIAssists) {
         this.oidPlayerHIAssists = oidPlayerHIAssists;
+    }
+
+    public Integer getREB() {
+        return REB;
+    }
+
+    public void setREB(Integer REB) {
+        this.REB = REB;
     }
 }

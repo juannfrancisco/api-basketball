@@ -18,22 +18,26 @@ public enum TypeStat {
         @Override
         public void addGameStatPlayer(GameStatPlayer gameStatPlayer, Integer value) {
             gameStatPlayer.setOR(  gameStatPlayer.getOR() + value  );
+            gameStatPlayer.setREB(  gameStatPlayer.getREB() + value  );
         }
 
         @Override
         public void addTeamStat(TeamStat teamStat, Integer value) {
             teamStat.setOR( teamStat.getOR() + value );
+            teamStat.setREB( teamStat.getREB() + value );
         }
     }, //Rebote Ofensivo
     DR {
         @Override
         public void addGameStatPlayer(GameStatPlayer gameStatPlayer, Integer value) {
             gameStatPlayer.setDR(  gameStatPlayer.getDR() + value  );
+            gameStatPlayer.setREB(  gameStatPlayer.getREB() + value  );
         }
 
         @Override
         public void addTeamStat(TeamStat teamStat, Integer value) {
             teamStat.setDR( teamStat.getDR() + value );
+            teamStat.setREB( teamStat.getREB() + value );
         }
     }, //Rebote Defensivo
 
@@ -88,6 +92,13 @@ public enum TypeStat {
         @Override
         public void addTeamStat(TeamStat teamStat, Integer value) {
             teamStat.setPTS( teamStat.getPTS() + value );
+            if( value == 1 ){
+                teamStat.setPTS1(teamStat.getPTS1() + value );
+            }else if(value == 2) {
+                teamStat.setPTS2(teamStat.getPTS2() + value);
+            }else if( value == 3 ){
+                teamStat.setPTS3(teamStat.getPTS3() + value);
+            }
         }
     }, //Point
     PTS1 {
@@ -140,6 +151,13 @@ public enum TypeStat {
         @Override
         public void addTeamStat(TeamStat teamStat, Integer value) {
             teamStat.setMPT( teamStat.getMPT() + value );
+            if( value == 1 ){
+                teamStat.setMPT1(teamStat.getMPT1() + value);
+            }else if(value == 2) {
+                teamStat.setMPT2(teamStat.getMPT2() + value);
+            }else if( value == 3 ){
+                teamStat.setMPT3(teamStat.getMPT3() + value);
+            }
         }
     }, //Missing Point
     MPT1 {

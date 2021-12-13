@@ -65,6 +65,8 @@ public class GameStatPlayer {
         this.STL = STL;
         this.BLK = BLK;
         this.PF = PF;
+        this.REB = 0;
+
     }
 
     public GameStatPlayer(String oid, String oidPlayer, String oidTeam ){
